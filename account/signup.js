@@ -10,8 +10,8 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: process.env.MAIL, // e.g., no-reply@yourdomain.com
-    pass: process.env.MAIL_PASSWORD, // stored securely in your .env
+    user: process.env.MAIL,
+    pass: process.env.MAIL_PASSWORD,
   },
 });
 
@@ -20,20 +20,28 @@ router.post("/signup", async (req, res) => {
   try {
     const { name, email, password, phoneNumber, address } = req.body;
 
+    // Check if email already exists
     const existingUser = await AccountCreate.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use." });
     }
 
+    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Generate sequential ui_id
+    const lastUser = await AccountCreate.findOne().sort({ ui_id: -1 }).limit(1);
+    const nextUiId = lastUser?.ui_id ? lastUser.ui_id + 1 : 5001;
+
+    // Create new user
     const newUser = new AccountCreate({
       name,
       email,
       password: hashedPassword,
       phoneNumber,
       address,
+      ui_id: nextUiId,
     });
 
     await newUser.save();
@@ -82,14 +90,15 @@ router.post("/signup", async (req, res) => {
       © ${new Date().getFullYear()} Black Stone Voice Chat Room. All rights reserved.
     </p>
   </div>
-`,
+      `,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res
-      .status(201)
-      .json({ message: "Account created successfully. Welcome email sent." });
+    res.status(201).json({
+      message: "Account created successfully. Welcome email sent.",
+      ui_id: nextUiId,
+    });
   } catch (error) {
     console.error("Signup error:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });

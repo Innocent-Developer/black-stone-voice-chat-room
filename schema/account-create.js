@@ -46,6 +46,11 @@ const accountCreateSchema = new schema({
     type: Date,
     default: Date.now,
   },
+  ui_id: {
+    type: Number,
+    unique: true,
+    index: true,
+  },
   resetPasswordOtp: { type: String },
   otpExpiration: { type: Number },
 });

@@ -7,6 +7,7 @@ const postFeedback = require("../Feedback/postfeedback");
 const getFeedback = require("../Feedback/getfeedback");
 const updateStatus = require("../Feedback/updateFeedback");
 const passwordResetOtp = require("../account/resetPasswordlink");
+const updateUser = require("../account/updateuser");
 
 // account routes
 router.post("/signup", signup);
@@ -14,6 +15,7 @@ router.post("/login", login);
 
 // get user
 router.get("/admin/all/users", require("../account/getalluser"));
+router.post("/update-user",updateUser)
 // passwordReset 
 router.post("/client/reset-password",passwordResetOtp );
 router.post("/client/reset-password/new-password", require("../account/newPassword"));
