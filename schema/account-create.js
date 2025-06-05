@@ -46,6 +46,8 @@ const accountCreateSchema = new schema({
     type: Date,
     default: Date.now,
   },
+  resetPasswordOtp: { type: String },
+  otpExpiration: { type: Number },
 });
 const AccountCreate = mongoose.model("AccountCreate", accountCreateSchema);
 module.exports = AccountCreate;
