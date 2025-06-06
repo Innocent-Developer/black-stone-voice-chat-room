@@ -8,6 +8,9 @@ const getFeedback = require("../Feedback/getfeedback");
 const updateStatus = require("../Feedback/updateFeedback");
 const passwordResetOtp = require("../account/resetPasswordlink");
 const updateUser = require("../account/updateuser");
+const buyCoins = require("../coins/buycoin");
+const applyMerchant = require("../Merchant/applyMerchant");
+const approveMerchant = require("../Merchant/approve-merchant");
 
 // account routes
 router.post("/signup", signup);
@@ -24,5 +27,16 @@ router.post("/client/reset-password/new-password", require("../account/newPasswo
 router.post("/client/feedback", postFeedback);
 router.get("/admin/all/feedback",getFeedback);
 router.post("/admin/update/feedback", updateStatus);
+
+// buy coins
+router.post("/client/buy-coins", buyCoins);
+
+
+
+//merchant
+router.post("/apply-merchant",applyMerchant)
+router.post("/admin/approve/merchant",approveMerchant)
+router.post("/merchant/buy-coin", require("../Merchant/merchantCoinBuy"));
+router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
 
 module.exports = router;

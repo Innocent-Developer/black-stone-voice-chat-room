@@ -28,9 +28,9 @@ const login = async (req, res) => {
         email: user.email,
         role: user.role,
         avatarUrl: user.avatarUrl,
+        ui_id: user.ui_id,
       },
     });
-
   } catch (error) {
     console.error("Login error:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
