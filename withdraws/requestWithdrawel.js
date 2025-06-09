@@ -35,6 +35,7 @@ const requestWithdrawal = async (req, res) => {
       bankName,
       status: "pending", // Optional: Default status
       requestedAt: new Date(), // Optional: Timestamp
+      
     });
 
     await withdrawalRequest.save();
