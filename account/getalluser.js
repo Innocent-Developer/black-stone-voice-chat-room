@@ -9,7 +9,7 @@ const getAlluser = async (req, res) => {
     if (!users || users.length === 0) {
       return res.status(404).json({ message: "No users found." });
     }
-
+    
     // Return the list of users
     res.status(200).json(users);
   } catch (error) {

@@ -11,8 +11,6 @@ const applyMerchant = async (req, res) => {
       merchantEmail,
       merchantLogoUrl,
     } = req.body;
-
-    // 🔍 Check if the merchantEmail exists in AccountCreate
     const account = await AccountCreate.findOne({ email: merchantEmail });
 
     if (!account) {
@@ -21,7 +19,6 @@ const applyMerchant = async (req, res) => {
       });
     }
 
-    // ✅ Validate required fields
     if (
       !merchantName ||
       !merchantAddress ||

@@ -1,27 +1,25 @@
 const mongoose = require("mongoose");
-const schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
-const CoinPurchaseRequestSchema = new schema({
+const WithdrawalSchema = new Schema({
   ui_id: {
-    type: Number,
-    required: true,
-  },
-  coinAmount: {
-    type: Number,
-    required: true,
-  },
-  paymentMethod: {
     type: String,
     required: true,
   },
-  transactionHash:{
+  amount: {
+    type: Number,
+    required: true,
+  },
+  accountName: {
     type: String,
     required: true,
-    unique: true,
-
   },
-  payPrice: {
-    type: Number,
+  accountNumber: {
+    type: String,
+    required: true,
+  },
+  bankName: {
+    type: String,
     required: true,
   },
   status: {
@@ -29,10 +27,14 @@ const CoinPurchaseRequestSchema = new schema({
     enum: ["pending", "approved", "rejected"],
     default: "pending",
   },
-  requestedAt: {
+  request_date: {
     type: Date,
     default: Date.now,
   },
+  approved_date: {
+    type: Date,
+  },
 });
 
-module.exports = mongoose.model("merchantcoibuyreques", CoinPurchaseRequestSchema);
+const Withdrawal = mongoose.model("Withdrawal", WithdrawalSchema);
+module.exports = Withdrawal;

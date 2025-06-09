@@ -40,7 +40,7 @@ const accountCreateSchema = new schema({
   role: {
     type: String,
     default: "user",
-    enum: ["admin", "user","merchant"],
+    enum: ["admin", "user", "merchant"],
   },
   createdAt: {
     type: Date,
@@ -51,7 +51,14 @@ const accountCreateSchema = new schema({
     unique: true,
     index: true,
   },
-
+  gold: {
+    type: Number,
+    default: 0,
+  },
+  diamond:{
+    type: Number,
+    default: 0,
+  },
   resetPasswordOtp: { type: String },
   otpExpiration: { type: Number },
 });

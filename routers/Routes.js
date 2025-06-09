@@ -11,6 +11,9 @@ const updateUser = require("../account/updateuser");
 const buyCoins = require("../coins/buycoin");
 const applyMerchant = require("../Merchant/applyMerchant");
 const approveMerchant = require("../Merchant/approve-merchant");
+const coinbuymerchant = require("../coins/buyCoinMerchant");
+const approvebuycoin = require("../Merchant/merchant-approve-coin-buy");
+const approveCoinBuyLocalUsers = require("../admin/approve-coin-buy-localusers");
 
 // account routes
 router.post("/signup", signup);
@@ -18,25 +21,35 @@ router.post("/login", login);
 
 // get user
 router.get("/admin/all/users", require("../account/getalluser"));
-router.post("/update-user",updateUser)
-// passwordReset 
-router.post("/client/reset-password",passwordResetOtp );
-router.post("/client/reset-password/new-password", require("../account/newPassword"));
+router.post("/update-user", updateUser);
+// passwordReset
+router.post("/client/reset-password", passwordResetOtp);
+router.post(
+  "/client/reset-password/new-password",
+  require("../account/newPassword")
+);
 
 // feedback routes
 router.post("/client/feedback", postFeedback);
-router.get("/admin/all/feedback",getFeedback);
+router.get("/admin/all/feedback", getFeedback);
 router.post("/admin/update/feedback", updateStatus);
 
 // buy coins
 router.post("/client/buy-coins", buyCoins);
-
-
+router.post("/coin-buy/merchant/local", coinbuymerchant);
+router.post("/merchant-approve/coin/user", approvebuycoin);
+router.post("/admin/approve/coin/buy/users", approveCoinBuyLocalUsers);
 
 //merchant
-router.post("/apply-merchant",applyMerchant)
-router.post("/admin/approve/merchant",approveMerchant)
+router.post("/apply-merchant", applyMerchant);
+router.post("/admin/approve/merchant", approveMerchant);
 router.post("/merchant/buy-coin", require("../Merchant/merchantCoinBuy"));
 router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
+
+// withdrawal
+router.post(
+  "/client/withdrawal/request",
+  require("../withdraws/requestWithdrawel")
+);
 
 module.exports = router;

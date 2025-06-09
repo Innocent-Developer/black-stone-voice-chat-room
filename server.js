@@ -11,7 +11,7 @@ dbconnect();
 
 app.use("/",router);
 app.get("/", (req, res) => {
-  res.send("Hello, World!");
+  res.send(`Server is running on http://localhost:${PORT}`);
 });
 // Start the server
 app.listen(PORT, () => {

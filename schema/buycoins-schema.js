@@ -27,7 +27,7 @@ const buycoinsSchema = new schema({
   status:{
     type: String,
     required: true,
-    enum: ["pending", "completed", "failed"],
+    enum: ["pending", "approved", "failed"],
     default: "pending",
   }
 });

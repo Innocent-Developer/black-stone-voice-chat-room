@@ -1,3 +1,4 @@
+const AccountCreate = require("../schema/account-create");
 const BuyCoins = require("../schema/buycoins-schema");
 
 const buyCoinapi = async (req, res) => {
@@ -7,6 +8,12 @@ const buyCoinapi = async (req, res) => {
     // Validate required fields
     if (!ui_id || !coinName || !paymentMethod || !payPrice || !transactionHash) {
       return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Check if ui_id exists in AccountCreate
+    const existingUser = await AccountCreate.findOne({ ui_id });
+    if (!existingUser) {
+      return res.status(404).json({ message: "Invalid ui_id. User does not exist." });
     }
 
     // Check if transactionHash already exists
