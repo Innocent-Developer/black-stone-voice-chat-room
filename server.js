@@ -8,10 +8,9 @@ const dbconnect = require("./db connect/dbconnect");
 const router = require("./routers/Routes.js");
 dbconnect();
 
-
-app.use("/",router);
+app.use("/", router);
 app.get("/", (req, res) => {
-  res.send(`Server is running on http://localhost:${PORT}`);
+  res.send(` Server Successfull started on port ${PORT}`);
 });
 // Start the server
 app.listen(PORT, () => {
