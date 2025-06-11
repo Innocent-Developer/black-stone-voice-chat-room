@@ -1,8 +1,6 @@
 const bcrypt = require("bcryptjs");
 const AccountCreate = require("../schema/account-create");
 
-// @route   POST /api/login
-// @desc    Authenticate user
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;

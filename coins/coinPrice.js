@@ -4,12 +4,12 @@ const updateCoinPrice = async (req, res) => {
   try {
     const { goldCoin, diamondCoin } = req.body;
 
-    // Validate input
-    if (!goldCoin || !diamondCoin) {
-      return res
-        .status(400)
-        .json({ message: "Both goldCoin and diamondCoin are required." });
-    }
+    // // Validate input
+    // if (!goldCoin || !diamondCoin) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Both goldCoin and diamondCoin are required." });
+    // }
 
     // Update or create coin price
     const coinPrice = await CoinPrice.findOneAndUpdate(

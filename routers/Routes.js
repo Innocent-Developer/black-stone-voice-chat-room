@@ -15,6 +15,7 @@ const coinbuymerchant = require("../coins/buyCoinMerchant");
 const approvebuycoin = require("../Merchant/merchant-approve-coin-buy");
 const approveCoinBuyLocalUsers = require("../admin/approve-coin-buy-localusers");
 const requestWithdrawal = require("../withdraws/requestWithdrawel");
+const sendGift = require("../gifts/send-gift");
 
 // account routes
 router.post("/signup", signup);
@@ -49,6 +50,16 @@ router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
 
 // withdrawal
 router.post("/client/withdrawal/request", requestWithdrawal);
+router.post(
+  "/admin/approve/withdrawal",
+  require("../admin/approve-withdrawl")
+);
 
 
+// coin price
+router.post("/admin/update/coin-price", require("../coins/coinPrice"));
+
+
+// gift send
+router.post("/client/gift/send",sendGift);
 module.exports = router;
