@@ -1,25 +1,30 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const AccountCreate = require("../schema/account-create");
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if user exists
     const user = await AccountCreate.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid email or password." });
     }
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password." });
     }
 
-    // Login successful
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
     res.status(200).json({
       message: "Login successful.",
+      token,
       user: {
         id: user._id,
         name: user.name,

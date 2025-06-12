@@ -8,7 +8,7 @@ const sendGift = async (req, res) => {
     if (!senderAccount || !receiverAccount) {
       return res.status(404).json({ message: "Sender or receiver not found" });
     }
-    if (senderAccount.balance < amount) {
+    if (senderAccount.gold < amount) {
       return res.status(400).json({ message: "Insufficient balance" });
     }
     senderAccount.gold -= amount;
