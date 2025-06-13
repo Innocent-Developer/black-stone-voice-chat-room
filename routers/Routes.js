@@ -24,6 +24,8 @@ const getAllPost = require("../post/getAllpost");
 const getPostUser = require("../post/getPostuser");
 const likePostUser = require("../post/likePostUser");
 const commentPostUser = require("../post/commentPostUser");
+const followUser = require("../follows/followuser");
+const getUserUIID = require("../account/getuserbyuiid");
 
 // account routes
 router.post("/signup", signup);
@@ -32,6 +34,7 @@ router.post("/login", login);
 // get user
 router.get("/admin/all/users", getAlluser);
 router.post("/update-user", updateUser);
+router.get("/client/get/user/:ui_id", getUserUIID);
 // passwordReset
 router.post("/client/reset-password", passwordResetOtp);
 router.post(
@@ -74,11 +77,13 @@ setInterval(() => {
 }, 60 * 1000); // every 1 minute
 
 // user post thing
-
 router.post("/client/post/create", createPost);
 router.get("/client/post/get", getAllPost);
 router.post("/client/post/get/user", getPostUser);
 router.post("/client/post/like", likePostUser);
 router.post("/client/post/comment", commentPostUser);
+
+// follow/following 
+router.post("/client/follow",followUser);
 
 module.exports = router;

@@ -30,10 +30,10 @@ const accountCreateSchema = new schema({
     enum: ["male", "female", "other"],
     default: "other",
   },
-  country: {
-    type: String,
-    required: true,
-  },
+  // country: {
+  //   type: String,
+  //   required: true,
+  // },
   phoneNumber: {
     type: String,
     unique: true,
@@ -67,6 +67,12 @@ const accountCreateSchema = new schema({
   diamond: {
     type: Number,
     default: 0,
+  },
+  followers: [{ type: Number }],
+  following: [{ type: Number }],
+  isVerified: {
+    type: Boolean,
+    default: false,
   },
   resetPasswordOtp: { type: String },
   otpExpiration: { type: Number },
