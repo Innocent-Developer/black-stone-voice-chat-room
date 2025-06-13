@@ -17,6 +17,8 @@ const postSchema = new schema(
       type: Number,
       required: true,
     },
+    post_id: { type: Number, unique: true },
+
     createdAt: {
       type: Date,
       default: Date.now,
@@ -25,10 +27,18 @@ const postSchema = new schema(
       type: Date,
       default: Date.now,
     },
-    likes:{
+    likes: {
       type: Number,
       default: 0,
     },
+    likedBy: [{ type: Number }],
+    comments: [
+      {
+        ui_id: { type: Number, required: true },
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
     tags: {
       type: [String],
       default: [],

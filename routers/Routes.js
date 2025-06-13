@@ -4,6 +4,7 @@ const router = express.Router();
 const signup = require("../account/signup");
 const login = require("../account/login");
 const postFeedback = require("../Feedback/postfeedback");
+const getAlluser = require("../account/getAllUser");
 const getFeedback = require("../Feedback/getfeedback");
 const updateStatus = require("../Feedback/updateFeedback");
 const passwordResetOtp = require("../account/resetPasswordlink");
@@ -19,13 +20,17 @@ const sendGift = require("../gifts/send-gift");
 const addBanner = require("../Banner/addBanner");
 const autoExpireBanners = require("../Banner/autoExpireBanners");
 const createPost = require("../post/createPost");
+const getAllPost = require("../post/getAllpost");
+const getPostUser = require("../post/getPostuser");
+const likePostUser = require("../post/likePostUser");
+const commentPostUser = require("../post/commentPostUser");
 
 // account routes
 router.post("/signup", signup);
 router.post("/login", login);
 
 // get user
-router.get("/admin/all/users", require("../account/getalluser"));
+router.get("/admin/all/users", getAlluser);
 router.post("/update-user", updateUser);
 // passwordReset
 router.post("/client/reset-password", passwordResetOtp);
@@ -68,8 +73,12 @@ setInterval(() => {
   autoExpireBanners();
 }, 60 * 1000); // every 1 minute
 
-
 // user post thing
 
 router.post("/client/post/create", createPost);
+router.get("/client/post/get", getAllPost);
+router.post("/client/post/get/user", getPostUser);
+router.post("/client/post/like", likePostUser);
+router.post("/client/post/comment", commentPostUser);
+
 module.exports = router;

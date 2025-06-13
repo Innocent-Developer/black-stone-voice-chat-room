@@ -11,22 +11,26 @@ const createPost = async (req, res) => {
         .json({ message: "Title, content, and ui_id are required." });
     }
 
-    // Validate user
-    const authorExists = await User.findOne({ ui_id: ui_id });
+    // Check if user exists
+    const authorExists = await User.findOne({ ui_id });
     if (!authorExists) {
       return res.status(404).json({ message: "Author not found." });
     }
 
-    // Validate images (optional)
-    if (images && !Array.isArray(images)) {
-      return res.status(400).json({ message: "Images must be an array." });
-    }
+    // if (images && !Array.isArray(images)) {
+    //   return res.status(400).json({ message: "Images must be an array." });
+    // }
 
-    // Create post
+    // 🔢 Get the latest post_id (if any), or default to 2000
+    const lastPost = await Post.findOne().sort({ post_id: -1 }).lean();
+    const nextPostId = lastPost?.post_id ? lastPost.post_id + 1 : 2001;
+
+    // Create post with incremented post_id
     const newPost = new Post({
+      post_id: nextPostId,
       title,
       content,
-      images: images || [], // assign multiple images here
+      images: images || [],
       ui_id,
       tags: tags || [],
     });
