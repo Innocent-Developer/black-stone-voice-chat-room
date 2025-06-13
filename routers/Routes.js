@@ -31,7 +31,7 @@ router.post("/signup", signup);
 router.post("/login", login);
 
 // get user
-router.get("/admin/all/users", require("../account/getAllUser"));
+// router.get("/admin/all/users", require("../account/getAllUser"));
 router.post("/update-user", updateUser);
 router.get("/client/get/user/:ui_id", getUserUIID);
 // passwordReset
