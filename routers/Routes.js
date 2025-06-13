@@ -4,7 +4,6 @@ const router = express.Router();
 const signup = require("../account/signup");
 const login = require("../account/login");
 const postFeedback = require("../Feedback/postfeedback");
-const getAlluser = require("../account/getAllUser");
 const getFeedback = require("../Feedback/getfeedback");
 const updateStatus = require("../Feedback/updateFeedback");
 const passwordResetOtp = require("../account/resetPasswordlink");
@@ -32,7 +31,7 @@ router.post("/signup", signup);
 router.post("/login", login);
 
 // get user
-router.get("/admin/all/users", getAlluser);
+router.get("/admin/all/users", require("../account/getAllUser"));
 router.post("/update-user", updateUser);
 router.get("/client/get/user/:ui_id", getUserUIID);
 // passwordReset
