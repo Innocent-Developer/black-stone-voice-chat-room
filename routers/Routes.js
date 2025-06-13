@@ -82,6 +82,7 @@ router.get("/client/post/get", getAllPost);
 router.post("/client/post/get/user", getPostUser);
 router.post("/client/post/like", likePostUser);
 router.post("/client/post/comment", commentPostUser);
+router.get("/client/post/get/all", getAllPost);
 
 // follow/following 
 router.post("/client/follow",followUser);
