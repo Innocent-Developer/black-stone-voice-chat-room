@@ -25,6 +25,15 @@ const accountCreateSchema = new schema({
         "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.",
     },
   },
+  gender: {
+    type: String,
+    enum: ["male", "female", "other"],
+    default: "other",
+  },
+  country: {
+    type: String,
+    required: true,
+  },
   phoneNumber: {
     type: String,
     unique: true,
@@ -55,7 +64,7 @@ const accountCreateSchema = new schema({
     type: Number,
     default: 0,
   },
-  diamond:{
+  diamond: {
     type: Number,
     default: 0,
   },
