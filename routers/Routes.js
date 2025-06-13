@@ -18,6 +18,7 @@ const requestWithdrawal = require("../withdraws/requestWithdrawel");
 const sendGift = require("../gifts/send-gift");
 const addBanner = require("../Banner/addBanner");
 const autoExpireBanners = require("../Banner/autoExpireBanners");
+const createPost = require("../post/createPost");
 
 // account routes
 router.post("/signup", signup);
@@ -66,4 +67,9 @@ router.post("/admin/add/banner", addBanner);
 setInterval(() => {
   autoExpireBanners();
 }, 60 * 1000); // every 1 minute
+
+
+// user post thing
+
+router.post("/client/post/create", createPost);
 module.exports = router;
