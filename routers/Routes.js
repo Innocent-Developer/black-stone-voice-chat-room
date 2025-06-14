@@ -26,13 +26,21 @@ const commentPostUser = require("../post/commentPostUser");
 const followUser = require("../follows/followuser");
 const getUserUIID = require("../account/getuserbyuiid");
 const getAlluser = require("../account/getalluser");
+const getCoinPrice = require("../coins/getCoinprice");
+const { getBanner } = require("../Banner/getBanner");
+const getAllWithdraws = require("../withdraws/getAllwithdraws");
+const getwithdrawByUIID = require("../withdraws/getWithdrawsByUIID");
+const getAllTransaction = require("../coins/getAllTransaction");
+const deleteUser = require("../account/deleteUser");
+const getTransactionByUIID = require("../coins/getTransactionByuiid");
 
 // account routes
 router.post("/signup", signup);
 router.post("/login", login);
+router.post("/user/account/delete/a/time", deleteUser);
 
 // get user
-router.get("/a/admin/bsvcr/get/all/users",getAlluser)
+router.get("/a/admin/bsvcr/get/all/users", getAlluser);
 
 router.post("/update-user", updateUser);
 router.get("/client/get/user/:ui_id", getUserUIID);
@@ -53,6 +61,8 @@ router.post("/client/buy-coins", buyCoins);
 router.post("/coin-buy/merchant/local", coinbuymerchant);
 router.post("/merchant-approve/coin/user", approvebuycoin);
 router.post("/admin/approve/coin/buy/users", approveCoinBuyLocalUsers);
+router.get("/get/all/transaction/admin/a/", getAllTransaction);
+router.get("/client/admin/get/transaction/a/i/d/:ui_id", getTransactionByUIID);
 
 //merchant
 router.post("/apply-merchant", applyMerchant);
@@ -63,15 +73,19 @@ router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
 // withdrawal
 router.post("/client/withdrawal/request", requestWithdrawal);
 router.post("/admin/approve/withdrawal", require("../admin/approve-withdrawl"));
+router.get("/admin/get/all/withdraws", getAllWithdraws);
+router.get("/get/user/withdraws/info/:ui_id", getwithdrawByUIID);
 
 // coin price
 router.post("/admin/update/coin-price", require("../coins/coinPrice"));
+router.get("/get/coin-price", getCoinPrice);
 
 // gift send
 router.post("/client/gift/send", sendGift);
 
 // baner add
 router.post("/admin/add/banner", addBanner);
+router.get("/client/get/banner", getBanner);
 
 setInterval(() => {
   autoExpireBanners();
@@ -85,7 +99,7 @@ router.post("/client/post/like", likePostUser);
 router.post("/client/post/comment", commentPostUser);
 router.get("/client/post/get/all", getAllPost);
 
-// follow/following 
-router.post("/client/follow",followUser);
+// follow/following
+router.post("/client/follow", followUser);
 
 module.exports = router;
