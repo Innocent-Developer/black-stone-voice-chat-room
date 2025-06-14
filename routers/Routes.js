@@ -25,13 +25,15 @@ const likePostUser = require("../post/likePostUser");
 const commentPostUser = require("../post/commentPostUser");
 const followUser = require("../follows/followuser");
 const getUserUIID = require("../account/getuserbyuiid");
+const getAlluser = require("../account/getalluser");
 
 // account routes
 router.post("/signup", signup);
 router.post("/login", login);
 
 // get user
-// router.get("/admin/all/users", require("../account/getAllUser"));
+router.get("/a/admin/bsvcr/get/all/users",getAlluser)
+
 router.post("/update-user", updateUser);
 router.get("/client/get/user/:ui_id", getUserUIID);
 // passwordReset

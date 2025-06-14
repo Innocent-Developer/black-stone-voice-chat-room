@@ -12,6 +12,10 @@ const accountCreateSchema = new schema({
     unique: true,
     trim: true,
   },
+  userName: {
+    type: String,
+    unique: true,
+  },
   password: {
     type: String,
     required: true,
