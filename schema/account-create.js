@@ -30,13 +30,12 @@ const accountCreateSchema = new schema({
     enum: ["male", "female", "other"],
     default: "other",
   },
-  // country: {
-  //   type: String,
-  //   required: true,
-  // },
+  country: {
+    type: String,
+    default: "global ",
+  },
   phoneNumber: {
     type: String,
-    unique: true,
   },
   address: {
     type: String,
