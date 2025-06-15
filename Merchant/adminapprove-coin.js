@@ -1,8 +1,9 @@
 const nodemailer = require("nodemailer");
 const CoinPurchaseRequest = require("../schema/CoinPurchaseRequest");
 const Merchant = require("../schema/merchantschema");
+const admin = require("../fireBase/firebase"); // Firebase Admin SDK
 
-// Configure Nodemailer transporter using environment variables for security
+// ✅ Nodemailer transporter
 const transporter = nodemailer.createTransport({
   host: "mail.privateemail.com",
   port: 465,
@@ -13,36 +14,57 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// ✅ Send email utility
 const sendEmail = async (to, subject, htmlContent) => {
   await transporter.sendMail({
-    from: `"blackstonevoicechatroom" <${process.env.MAIL}>`, // Make sure this matches your SMTP user
+    from: `"blackstonevoicechatroom" <${process.env.MAIL}>`,
     to,
     subject,
     html: htmlContent,
   });
 };
 
+// ✅ Send FCM notification
+const sendFCM = async (token, title, body) => {
+  if (!token) return;
+
+  try {
+    const response = await admin.messaging().send({
+      token,
+      notification: { title, body },
+    });
+    console.log("✅ FCM sent:", response);
+  } catch (error) {
+    console.error("❌ FCM error:", error.code);
+    if (error.code === 'messaging/registration-token-not-registered') {
+      console.warn("🚫 Invalid FCM token");
+      // Optional: remove token from DB if needed
+    }
+  }
+};
+
+// ✅ Main controller
 const approveCoinPurchase = async (req, res) => {
   try {
     const { requestId, action } = req.body;
 
     if (!requestId || !action) {
-      return res
-        .status(400)
-        .json({ message: "requestId and action are required." });
+      return res.status(400).json({ message: "requestId and action are required." });
     }
 
     const request = await CoinPurchaseRequest.findById(requestId);
-    if (!request)
+    if (!request) {
       return res.status(404).json({ message: "Request not found." });
+    }
 
     if (request.status !== "pending") {
       return res.status(400).json({ message: "Request already processed." });
     }
 
     const merchant = await Merchant.findOne({ ui_id: request.ui_id });
-    if (!merchant)
+    if (!merchant) {
       return res.status(404).json({ message: "Merchant not found." });
+    }
 
     if (action === "approve") {
       merchant.coinBalance = (merchant.coinBalance || 0) + request.coinAmount;
@@ -69,15 +91,19 @@ const approveCoinPurchase = async (req, res) => {
         </div>
       `;
 
-      await sendEmail(
-        merchant.merchantEmail,
-        "Your Coin Purchase Request Approved",
-        approvalHtml
+      await sendEmail(merchant.merchantEmail, "Your Coin Purchase Request Approved", approvalHtml);
+
+      // ✅ Send FCM to merchant
+      await sendFCM(
+        merchant.deviceToken,
+        "Coin Purchase Approved",
+        `Your ${request.coinAmount} coin purchase has been approved.`
       );
 
       return res.status(200).json({
-        message: "Request approved, balance updated, and email sent.",
+        message: "Request approved, balance updated, email and notification sent.",
       });
+
     } else if (action === "reject") {
       request.status = "rejected";
       await request.save();
@@ -99,20 +125,22 @@ const approveCoinPurchase = async (req, res) => {
         </div>
       `;
 
-      await sendEmail(
-        merchant.merchantEmail,
-        "Your Coin Purchase Request Rejected",
-        rejectHtml
+      await sendEmail(merchant.merchantEmail, "Your Coin Purchase Request Rejected", rejectHtml);
+
+      // ✅ Send FCM rejection notice
+      await sendFCM(
+        merchant.deviceToken,
+        "Coin Purchase Rejected",
+        `Your ${request.coinAmount} coin purchase has been rejected.`
       );
 
-      return res
-        .status(200)
-        .json({ message: "Request rejected and email sent." });
+      return res.status(200).json({ message: "Request rejected, email and notification sent." });
     } else {
       return res.status(400).json({ message: "Invalid action." });
     }
+
   } catch (error) {
-    console.error("Error approving request:", error);
+    console.error("❌ Error approving request:", error);
     res.status(500).json({ message: "Internal server error." });
   }
 };

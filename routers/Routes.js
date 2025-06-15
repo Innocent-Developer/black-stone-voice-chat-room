@@ -33,6 +33,8 @@ const getwithdrawByUIID = require("../withdraws/getWithdrawsByUIID");
 const getAllTransaction = require("../coins/getAllTransaction");
 const deleteUser = require("../account/deleteUser");
 const getTransactionByUIID = require("../coins/getTransactionByuiid");
+const storeDeviceToken = require("../controllers/saveDeviceToken");
+const approveCoinsell = require("../Merchant/approve-sendcoinUser");
 
 // account routes
 router.post("/signup", signup);
@@ -69,6 +71,7 @@ router.post("/apply-merchant", applyMerchant);
 router.post("/admin/approve/merchant", approveMerchant);
 router.post("/merchant/buy-coin", require("../Merchant/merchantCoinBuy"));
 router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
+router.post("/merchant/approve/sell/coin/a/live", approveCoinsell)
 
 // withdrawal
 router.post("/client/withdrawal/request", requestWithdrawal);
@@ -87,9 +90,9 @@ router.post("/client/gift/send", sendGift);
 router.post("/admin/add/banner", addBanner);
 router.get("/client/get/banner", getBanner);
 
-setInterval(() => {
-  autoExpireBanners();
-}, 60 * 1000); // every 1 minute
+// setInterval(() => {
+//   autoExpireBanners();
+// }, 60 * 1000); // every 1 minute
 
 // user post thing
 router.post("/client/post/create", createPost);
@@ -101,5 +104,8 @@ router.get("/client/post/get/all", getAllPost);
 
 // follow/following
 router.post("/client/follow", followUser);
+
+// store device token
+router.post("/client/store-device-token", storeDeviceToken);
 
 module.exports = router;

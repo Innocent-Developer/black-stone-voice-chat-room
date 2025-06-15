@@ -71,6 +71,8 @@ const accountCreateSchema = new schema({
     type: Number,
     default: 0,
   },
+  deviceToken: { type: String },
+
   followers: [{ type: Number }],
   following: [{ type: Number }],
   isVerified: {
