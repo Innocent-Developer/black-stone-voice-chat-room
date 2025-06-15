@@ -21,6 +21,6 @@ Thumbs.db
 
 # Build output
 dist/
-# build/firebase-adminsdk.json
+ build/firebase-adminsdk.json
 config/
 
