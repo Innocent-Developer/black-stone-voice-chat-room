@@ -25,6 +25,11 @@ router.post("/signup", async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use." });
     }
+    const userNameExists = await AccountCreate.findOne({ userName });
+    if (userNameExists) { 
+      return res.status(400).json({ message: "Username already in use." });
+      }
+      
 
     // Hash the password
     const salt = await bcrypt.genSalt(10);
