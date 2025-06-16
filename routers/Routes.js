@@ -17,7 +17,6 @@ const approveCoinBuyLocalUsers = require("../admin/approve-coin-buy-localusers")
 const requestWithdrawal = require("../withdraws/requestWithdrawel");
 const sendGift = require("../gifts/send-gift");
 const addBanner = require("../Banner/addBanner");
-const autoExpireBanners = require("../Banner/autoExpireBanners");
 const createPost = require("../post/createPost");
 const getAllPost = require("../post/getAllpost");
 const getPostUser = require("../post/getPostuser");
@@ -37,6 +36,8 @@ const storeDeviceToken = require("../controllers/saveDeviceToken");
 const approveCoinsell = require("../Merchant/approve-sendcoinUser");
 const getAllMerchants = require("../Merchant/getAllMerchants");
 const getMerchantById = require("../Merchant/getMerchantById");
+const getBannerbyid = require("../Banner/getBannerById");
+const getFeedbackById = require("../Feedback/getFeedbackById");
 
 // account routes
 router.post("/signup", signup);
@@ -59,6 +60,7 @@ router.post(
 router.post("/client/feedback", postFeedback);
 router.get("/admin/all/feedback", getFeedback);
 router.post("/admin/update/feedback", updateStatus);
+router.get("/admin/get/feedback/:id",getFeedbackById);
 
 // buy coins
 router.post("/client/buy-coins", buyCoins);
@@ -93,6 +95,7 @@ router.post("/client/gift/send", sendGift);
 // baner add
 router.post("/admin/add/banner", addBanner);
 router.get("/client/get/banner", getBanner);
+router.get("/client/get/banner/i/d/full/n/:id",getBannerbyid)
 
 // setInterval(() => {
 //   autoExpireBanners();
@@ -104,7 +107,6 @@ router.get("/client/post/get", getAllPost);
 router.post("/client/post/get/user", getPostUser);
 router.post("/client/post/like", likePostUser);
 router.post("/client/post/comment", commentPostUser);
-router.get("/client/post/get/all", getAllPost);
 
 // follow/following
 router.post("/client/follow", followUser);

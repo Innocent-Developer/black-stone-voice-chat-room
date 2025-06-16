@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 // POST /api/signup
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, phoneNumber, address } = req.body;
+    const { name, email, password ,userName ,gender ,country } = req.body;
 
     // Check if email already exists
     const existingUser = await AccountCreate.findOne({ email });
@@ -39,8 +39,9 @@ router.post("/signup", async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      phoneNumber,
-      address,
+      userName,
+      gender,
+      country,
       ui_id: nextUiId,
     });
 
