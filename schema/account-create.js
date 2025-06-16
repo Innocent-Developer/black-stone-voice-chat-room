@@ -3,7 +3,7 @@ const schema = mongoose.Schema;
 const accountCreateSchema = new schema({
   name: {
     type: String,
-    required: true,
+
     trim: true,
   },
   email: {
@@ -14,6 +14,7 @@ const accountCreateSchema = new schema({
   },
   userName: {
     type: String,
+    required: true,
     unique: true,
   },
   password: {
