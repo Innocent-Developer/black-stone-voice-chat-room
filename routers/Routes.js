@@ -38,6 +38,7 @@ const getAllMerchants = require("../Merchant/getAllMerchants");
 const getMerchantById = require("../Merchant/getMerchantById");
 const getBannerbyid = require("../Banner/getBannerById");
 const getFeedbackById = require("../Feedback/getFeedbackById");
+const chatRouter = require("../chats/ChatRouter")
 
 // account routes
 router.post("/signup", signup);
@@ -113,5 +114,9 @@ router.post("/client/follow", followUser);
 
 // store device token
 router.post("/client/store-device-token", storeDeviceToken);
+
+// chats by admin 
+router.use("/chats", chatRouter);
+
 
 module.exports = router;
