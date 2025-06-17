@@ -15,6 +15,10 @@ const dbconnect = require("./db connect/dbconnect");
 const router = require("./routers/Routes.js");
 
 dbconnect();
+const passport = require("passport");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+require("./config/passport.js"); // <-- Load Passport config
 
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
 
@@ -25,6 +29,17 @@ app.use("/", router);
 app.get("/", (req, res) => {
   res.send(`Server Successfully started on port ${PORT}`);
 });
+app.use(cookieParser());
+app.use(
+  session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Create HTTP server from Express
 const server = http.createServer(app);
@@ -76,6 +91,8 @@ app.post("/admin/broadcast", async (req, res) => {
   }
 });
 
+// google sign-in
+app.use("/auth", require("./auths/auth.js"));
 // Start server with HTTP+Socket.IO
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
