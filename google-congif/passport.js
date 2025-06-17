@@ -1,6 +1,6 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const AccountCreate = require("../models/AccountCreate");
+const AccountCreate = require("../schema/account-create");
 
 passport.serializeUser((user, done) => {
   done(null, user.id); // store MongoDB _id in session
