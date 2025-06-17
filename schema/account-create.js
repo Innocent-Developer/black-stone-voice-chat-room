@@ -19,18 +19,7 @@ const accountCreateSchema = new schema({
   },
   password: {
     type: String,
-    required: function () {
-      return !this.googleId; // if it's not a Google account, password is required
-    },
-    minlength: 8,
-    validate: {
-      validator: function (value) {
-        if (this.googleId) return true; // skip validation if from Google
-        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$/.test(value);
-      },
-      message:
-        "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.",
-    },
+    required: false, // <-- allow blank for social login
   },
   googleId: {
     type: String,
