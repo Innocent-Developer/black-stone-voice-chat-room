@@ -1,32 +1,47 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const User = require("../schema/account-create");
+const AccountCreate = require("../models/AccountCreate");
+
+passport.serializeUser((user, done) => {
+  done(null, user.id); // store MongoDB _id in session
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await AccountCreate.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL:
-        "https://www.blackstonevoicechatroom.online/auth/google/callback",
+      callbackURL: "https://www.blackstonevoicechatroom.online/auth/google/callback", // must match in Google Console
     },
     async (accessToken, refreshToken, profile, done) => {
-      const existingUser = await User.findOne({ googleId: profile.id });
-      if (existingUser) return done(null, existingUser);
+      try {
+        const existingUser = await AccountCreate.findOne({ email: profile.emails[0].value });
 
-      const newUser = await User.create({
-        googleId: profile.id,
-        email: profile.emails[0].value,
-        name: profile.displayName,
-        avatar: profile.photos[0].value,
-      });
+        if (existingUser) return done(null, existingUser);
 
-      done(null, newUser);
+        const newUser = new AccountCreate({
+          name: profile.displayName,
+          email: profile.emails[0].value,
+          userName: profile.id,
+          password: profile.id, // OR generate a random one if needed
+          isVerified: true,
+          avatarUrl: profile.photos[0]?.value,
+        });
+
+        await newUser.save();
+        done(null, newUser);
+      } catch (err) {
+        done(err, null);
+      }
     }
   )
 );
-
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser((id, done) => {
-  User.findById(id).then((user) => done(null, user));
-});
