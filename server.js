@@ -18,7 +18,7 @@ dbconnect();
 const passport = require("passport");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
-require("./config/passport.js"); // <-- Load Passport config
+require("./google-congif/passport.js"); // <-- Load Passport config
 
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
 
