@@ -28,7 +28,7 @@ router.get(
         followers,
         following,
         gold,
-        diamond
+        diamond,
       } = req.user;
       res.send({
         message: "✅ Google login successful",
@@ -40,8 +40,9 @@ router.get(
           isVerified,
           ui_id,
           followers,
-          following, gold,
-        diamond
+          following,
+          gold,
+          diamond,
         },
       });
     } else {
