@@ -41,6 +41,14 @@ const accountCreateSchema = new schema(
     deviceToken: {
       type: String,
     },
+    gold:{
+      type: Number,
+      default: 0,
+    },
+    diamond:{
+      type: Number,
+      default: 0,
+    },
     followers: [
       {
         type: Number,
