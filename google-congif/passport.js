@@ -41,7 +41,7 @@ passport.use(
         const newUser = new AccountCreate({
           name: profile.displayName,
           email: profile.emails[0].value,
-          userName: profile.id,
+          userName: profile.displayName,
           password: profile.id,
           isVerified: true,
           phoneNumber: `google-${profile.id}`, // ✅ Safe and unique
