@@ -40,16 +40,12 @@ passport.use(
           // ✅ Generate JWT for existing user
           const token = jwt.sign(
             {
-               _id: existingUser._id,
+              id: existingUser._id,
               name: existingUser.name,
-              userName: existingUser.userName,
               email: existingUser.email,
-              isVerified: existingUser.isVerified,
+              userName: existingUser.userName,
               ui_id: existingUser.ui_id,
-              followers: existingUser.followers || [],
-              following: existingUser.following || [],
-              gold: existingUser.gold || 0,
-              diamond: existingUser.diamond || 0,
+              isVerified: existingUser.isVerified,
             },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
@@ -85,9 +81,7 @@ passport.use(
           process.env.JWT_SECRET,
           { expiresIn: "7d" }
         );
-
-        newUser.token = token; // ✅ Attach token
-        done(null, newUser,token);
+        done(null, newUser);
       } catch (err) {
         console.error("❌ Google OAuth error:", err);
         done(err, null);

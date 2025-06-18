@@ -1,7 +1,7 @@
 const express = require("express");
 const passport = require("passport");
 const router = express.Router();
-const jwt = require("jsonwebtoken"); // Add this
+
 // Start Google login
 router.get(
   "/google",
@@ -30,37 +30,6 @@ router.get(
         gold,
         diamond,
       } = req.user;
-      const token = jwt.sign(
-        {
-          _id,
-          name,
-          userName,
-          email,
-          isVerified,
-          ui_id,
-          followers,
-          following,
-          gold,
-          diamond,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" }
-      );
-       const payload = {
-      _id,
-      name,
-      userName,
-      email,
-      isVerified,
-      ui_id,
-      followers,
-      following,
-      gold,
-      diamond,
-      token,
-    };
-
-    const encoded = encodeURIComponent(JSON.stringify(payload));
       res.send({
         message: "✅ Google login successful",
         user: {
@@ -75,7 +44,6 @@ router.get(
           gold,
           diamond,
         },
-        encodedUser: encoded, // Send encoded user data
       });
     } else {
       res.status(400).send({ message: "❌ User not found in request" });
