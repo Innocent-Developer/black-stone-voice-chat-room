@@ -49,6 +49,14 @@ const accountCreateSchema = new schema(
       type: Number,
       default: 0,
     },
+    country:{
+      type:String,
+      default:"global"
+    },
+    gender:{
+      type:String,
+      default:"Other"
+    },
     followers: [
       {
         type: Number,

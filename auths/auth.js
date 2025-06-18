@@ -16,10 +16,16 @@ router.get(
     session: true,
   }),
   (req, res) => {
-    // Send a success response
-    res.send("✅ Google login successful");
-    // OR redirect to a frontend page if you have one in future
-    // res.redirect("https://yourfrontend.com/dashboard");
+    // ✅ Send selected user fields in response (safe for frontend)
+    if (req.user) {
+      const { name, email, userName, avatarUrl, ui_id } = req.user;
+      res.send({
+        message: "✅ Google login successful",
+        user: { name, email, userName, avatarUrl, ui_id },
+      });
+    } else {
+      res.status(400).send({ message: "❌ User not found in request" });
+    }
   }
 );
 
