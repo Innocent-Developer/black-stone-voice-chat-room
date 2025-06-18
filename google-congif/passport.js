@@ -37,9 +37,10 @@ passport.use(
         if (existingUser) {
           console.log("✅ User found in DB");
 
+          // ✅ Generate JWT for existing user
           const token = jwt.sign(
             {
-              _id: existingUser._id,
+               _id: existingUser._id,
               name: existingUser.name,
               userName: existingUser.userName,
               email: existingUser.email,
@@ -54,47 +55,39 @@ passport.use(
             { expiresIn: "7d" }
           );
 
-          existingUser.token = token;
+          existingUser.token = token; // ✅ Attach token
           return done(null, existingUser);
         }
 
-        // Create new user
         const newUser = new AccountCreate({
           name: profile.displayName,
           email: profile.emails[0].value,
-          userName: profile.id,
+          userName: profile.displayName,
           password: profile.id,
           isVerified: true,
           phoneNumber: `google-${profile.id}`,
           ui_id: await generateUniqueUIID(),
-          followers: [],
-          following: [],
-          gold: 0,
-          diamond: 0,
         });
 
         await newUser.save();
         console.log("✅ New user created");
 
+        // ✅ Generate JWT for new user
         const token = jwt.sign(
           {
-            _id: newUser._id,
+            id: newUser._id,
             name: newUser.name,
-            userName: newUser.userName,
             email: newUser.email,
-            isVerified: newUser.isVerified,
+            userName: newUser.userName,
             ui_id: newUser.ui_id,
-            followers: [],
-            following: [],
-            gold: 0,
-            diamond: 0,
+            isVerified: newUser.isVerified,
           },
           process.env.JWT_SECRET,
           { expiresIn: "7d" }
         );
 
-        newUser.token = token;
-        done(null, newUser);
+        newUser.token = token; // ✅ Attach token
+        done(null, newUser,token);
       } catch (err) {
         console.error("❌ Google OAuth error:", err);
         done(err, null);
