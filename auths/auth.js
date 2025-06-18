@@ -18,8 +18,18 @@ router.get(
   (req, res) => {
     // ✅ Send selected user fields in response (safe for frontend)
     if (req.user) {
-      const {_id, name, userName, email, isVerified, ui_id, followers, following } =
-        req.user;
+      const {
+        _id,
+        name,
+        userName,
+        email,
+        isVerified,
+        ui_id,
+        followers,
+        following,
+        gold,
+        diamond
+      } = req.user;
       res.send({
         message: "✅ Google login successful",
         user: {
@@ -30,7 +40,8 @@ router.get(
           isVerified,
           ui_id,
           followers,
-          following,
+          following, gold,
+        diamond
         },
       });
     } else {
