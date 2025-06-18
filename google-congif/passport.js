@@ -2,6 +2,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const AccountCreate = require("../schema/account-create");
 const dotenv = require("dotenv");
+const generateUniqueUIID  = require("../utils/generateUniqueUIID")
 dotenv.config();
 passport.serializeUser((user, done) => {
   done(null, user.id); // store MongoDB _id in session
@@ -44,6 +45,7 @@ passport.use(
           password: profile.id,
           isVerified: true,
           phoneNumber: `google-${profile.id}`, // ✅ Safe and unique
+           ui_id: await generateUniqueUIID()
         });
 
         await newUser.save();
