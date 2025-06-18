@@ -35,9 +35,7 @@ const accountCreateSchema = new schema({
     type: String,
     default: "global ",
   },
-  phoneNumber: {
-    type: String,
-  },
+  phoneNumber: `google-${profile.id}`, // ← safe fallback
   address: {
     type: String,
   },
