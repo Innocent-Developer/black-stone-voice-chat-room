@@ -1,81 +1,88 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema;
-const accountCreateSchema = new schema({
-  name: {
-    type: String,
 
-    trim: true,
+const accountCreateSchema = new schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    userName: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    phoneNumber: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows multiple `null` values
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    avatarUrl: {
+      type: String,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    ui_id: {
+      type: Number,
+      unique: true,
+      required: true,
+    },
+    deviceToken: {
+      type: String,
+    },
+    followers: [
+      {
+        type: Number,
+      },
+    ],
+    following: [
+      {
+        type: Number,
+      },
+    ],
+    resetPasswordOtp: {
+      type: String,
+    },
+    otpExpiration: {
+      type: Number,
+    },
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-  },
-  userName: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: false, // <-- allow blank for social login
-  },
-  googleId: {
-    type: String,
-    unique: true,
-    sparse: true, // allow null
-  },
-  gender: {
-    type: String,
-    enum: ["male", "female", "other"],
-    default: "other",
-  },
-  country: {
-    type: String,
-    default: "global ",
-  },
-  phoneNumber: `google-${profile.id}`, // ← safe fallback
-  address: {
-    type: String,
-  },
-  avatarUrl: {
-    type: String,
-    default:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7sXujgAPwegUA7onn6CJ5vwmitw-yR02eofn9_tgBumddyMZn0ADFxqNy4O0Zj6dTpP0&usqp=CAU", // Default avatar URL
-  },
-  role: {
-    type: String,
-    default: "user",
-    enum: ["admin", "user", "merchant"],
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  ui_id: {
-    type: Number,
-    unique: true,
-    index: true,
-  },
-  gold: {
-    type: Number,
-    default: 0,
-  },
-  diamond: {
-    type: Number,
-    default: 0,
-  },
-  deviceToken: { type: String },
+  { timestamps: true }
+);
 
-  followers: [{ type: Number }],
-  following: [{ type: Number }],
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-  resetPasswordOtp: { type: String },
-  otpExpiration: { type: Number },
+// ✅ Generate unique 6-digit ui_id
+accountCreateSchema.pre("save", async function (next) {
+  const user = this;
+
+  if (!user.ui_id) {
+    let isUnique = false;
+
+    while (!isUnique) {
+      const randomId = Math.floor(100000 + Math.random() * 900000); // 6-digit number
+      const existingUser = await mongoose.models.AccountCreate.findOne({
+        ui_id: randomId,
+      });
+
+      if (!existingUser) {
+        user.ui_id = randomId;
+        isUnique = true;
+      }
+    }
+  }
+
+  next();
 });
+
 const AccountCreate = mongoose.model("AccountCreate", accountCreateSchema);
 module.exports = AccountCreate;

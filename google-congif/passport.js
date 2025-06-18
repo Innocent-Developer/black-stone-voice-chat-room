@@ -43,7 +43,7 @@ passport.use(
           userName: profile.id,
           password: profile.id,
           isVerified: true,
-          avatarUrl: profile.photos[0]?.value,
+          phoneNumber: `google-${profile.id}`, // ✅ Safe and unique
         });
 
         await newUser.save();
@@ -56,4 +56,3 @@ passport.use(
     }
   )
 );
-
