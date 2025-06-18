@@ -18,10 +18,20 @@ router.get(
   (req, res) => {
     // ✅ Send selected user fields in response (safe for frontend)
     if (req.user) {
-      const userData = req.user;
+      const {_id, name, userName, email, isVerified, ui_id, followers, following } =
+        req.user;
       res.send({
         message: "✅ Google login successful",
-        user:userData,
+        user: {
+          _id,
+          name,
+          userName,
+          email,
+          isVerified,
+          ui_id,
+          followers,
+          following,
+        },
       });
     } else {
       res.status(400).send({ message: "❌ User not found in request" });
