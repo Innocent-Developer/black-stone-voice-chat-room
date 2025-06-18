@@ -64,10 +64,19 @@ router.get(
       res.send({
         message: "✅ Google login successful",
         user: {
-          encodedUser: encoded,
+          _id,
+          name,
+          userName,
+          email,
+          isVerified,
+          ui_id,
+          followers,
+          following,
+          gold,
+          diamond,
         },
+        encodedUser: encoded, // Send encoded user data
       });
-      // res.redirect(`https://yourfrontend.com/overview.html?data=${encoded}`);
     } else {
       res.status(400).send({ message: "❌ User not found in request" });
     }
