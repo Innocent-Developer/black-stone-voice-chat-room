@@ -57,6 +57,7 @@ router.get(
         user: payload,
         token, // <-- Send token separately, not inside user object
       });
+      
     } catch (error) {
       console.error("Error during Google callback:", error);
       res.status(500).json({ message: "Server error during login" });

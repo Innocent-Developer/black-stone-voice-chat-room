@@ -119,4 +119,8 @@ router.post("/client/store-device-token", storeDeviceToken);
 router.use("/chats", chatRouter);
 
 
+// user chat routes
+router.use("/chats/users", chatRouter);
+
+
 module.exports = router;

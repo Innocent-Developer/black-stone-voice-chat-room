@@ -1,46 +1,108 @@
 const express = require("express");
 const router = express.Router();
-const Chat = require("../schema/chat");
 const Message = require("../schema/Message");
+const auth = require("../middleware/authMiddleware");
+const Conversation = require("../schema/Conversation");
 
-// 1. Start or get existing chat session between admin and user
-router.post("/start-session", async (req, res) => {
-  const { adminId, userId } = req.body;
+// Send a message
+router.post("/send", auth, async (req, res) => {
+  const { receiverId, content } = req.body;
+
+  if (!receiverId || !content) {
+    return res
+      .status(400)
+      .json({ message: "Receiver and content are required" });
+  }
 
   try {
-    let chat = await Chat.findOne({
-      participants: { $all: [adminId, userId] },
+    const message = new Message({
+      senderId: req.user.id,
+      receiverId,
+      content,
     });
 
-    if (!chat) {
-      chat = await Chat.create({ participants: [adminId, userId] });
+    await message.save();
+    res.status(201).json(message);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to send message", error: err.message });
+  }
+});
+
+// Get messages between current user and another user
+// routes/chat.js
+router.get("/conversation/:receiverId", auth, async (req, res) => {
+  const receiverId = req.params.receiverId;
+
+  try {
+    const messages = await Message.find({
+      $or: [
+        { senderId: req.user.id, receiverId },
+        { senderId: receiverId, receiverId: req.user.id },
+      ],
+    }).sort({ timestamp: 1 });
+
+    res.json(messages);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch conversation", error: err.message });
+  }
+});
+
+router.post("/conversations", async (req, res) => {
+  const { senderId, receiverId } = req.body;
+
+  try {
+    let conversation = await Conversation.findOne({
+      members: { $all: [senderId, receiverId] },
+    });
+
+    if (!conversation) {
+      conversation = new Conversation({ members: [senderId, receiverId] });
+      await conversation.save();
     }
 
-    res.json(chat);
-  } catch (error) {
-    res.status(500).json({ error: "Error creating chat session" });
+    res.status(200).json(conversation);
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to get/create conversation",
+      error: err.message,
+    });
   }
 });
 
-// 2. Get all messages for a chat
-router.get("/messages/:chatId", async (req, res) => {
+// POST /api/messages
+// body: { conversationId, senderId, content }
+
+router.post("/messages", async (req, res) => {
+  const { conversationId, senderId, content } = req.body;
+
   try {
-    const messages = await Message.find({ chat: req.params.chatId }).sort({ timestamp: 1 });
-    res.json(messages);
-  } catch (error) {
-    res.status(500).json({ error: "Error fetching messages" });
+    const message = new Message({ conversationId, senderId, content });
+    await message.save();
+    res.status(201).json(message);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to send message", error: err.message });
   }
 });
 
-// 3. Save message to DB
-router.post("/send-message", async (req, res) => {
-  const { chatId, senderId, message } = req.body;
+// GET /api/messages/:conversationId
 
+router.get("/messages/:conversationId", async (req, res) => {
   try {
-    const msg = await Message.create({ chat: chatId, sender: senderId, message });
-    res.status(201).json(msg);
-  } catch (error) {
-    res.status(500).json({ error: "Error sending message" });
+    const messages = await Message.find({
+      conversationId: req.params.conversationId,
+    }).sort({ timestamp: 1 });
+
+    res.status(200).json(messages);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to get messages", error: err.message });
   }
 });
 
