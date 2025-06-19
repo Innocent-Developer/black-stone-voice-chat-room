@@ -1,6 +1,7 @@
 const express = require("express");
 const passport = require("passport");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 
 // Start Google login
 router.get(
@@ -15,9 +16,12 @@ router.get(
     failureRedirect: "/auth/failed",
     session: true,
   }),
-  (req, res) => {
-    // ✅ Send selected user fields in response (safe for frontend)
-    if (req.user) {
+  async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
       const {
         _id,
         name,
@@ -30,23 +34,32 @@ router.get(
         gold,
         diamond,
       } = req.user;
-      res.send({
-        message: "✅ Google login successful",
-        user: {
-          _id,
-          name,
-          userName,
-          email,
-          isVerified,
-          ui_id,
-          followers,
-          following,
-          gold,
-          diamond,
-        },
+
+      const payload = {
+        _id,
+        name,
+        userName,
+        email,
+        isVerified,
+        ui_id,
+        followers,
+        following,
+        gold,
+        diamond,
+      };
+
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "7d",
       });
-    } else {
-      res.status(400).send({ message: "❌ User not found in request" });
+
+      res.json({
+        message: "✅ Google login successful",
+        user: payload,
+        token, // <-- Send token separately, not inside user object
+      });
+    } catch (error) {
+      console.error("Error during Google callback:", error);
+      res.status(500).json({ message: "Server error during login" });
     }
   }
 );
