@@ -12,7 +12,9 @@ router.post("/send", auth, async (req, res) => {
   const { receiverId, content } = req.body;
 
   if (!receiverId || !content) {
-    return res.status(400).json({ message: "Receiver and content are required" });
+    return res
+      .status(400)
+      .json({ message: "Receiver and content are required" });
   }
 
   try {
@@ -25,7 +27,9 @@ router.post("/send", auth, async (req, res) => {
     await message.save();
     res.status(201).json(message);
   } catch (err) {
-    res.status(500).json({ message: "Failed to send message", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to send message", error: err.message });
   }
 });
 
@@ -45,7 +49,9 @@ router.get("/conversation/:receiverId", auth, async (req, res) => {
 
     res.json(messages);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch conversation", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch conversation", error: err.message });
   }
 });
 
@@ -67,7 +73,12 @@ router.post("/conversations", async (req, res) => {
 
     res.status(200).json(conversation);
   } catch (err) {
-    res.status(500).json({ message: "Failed to get/create conversation", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: "Failed to get/create conversation",
+        error: err.message,
+      });
   }
 });
 
@@ -82,7 +93,9 @@ router.post("/messages", async (req, res) => {
     await message.save();
     res.status(201).json(message);
   } catch (err) {
-    res.status(500).json({ message: "Failed to send message", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to send message", error: err.message });
   }
 });
 
@@ -97,7 +110,9 @@ router.get("/messages/:conversationId", async (req, res) => {
 
     res.status(200).json(messages);
   } catch (err) {
-    res.status(500).json({ message: "Failed to get messages", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to get messages", error: err.message });
   }
 });
 
@@ -122,7 +137,9 @@ router.get("/history/:user1Id/:user2Id", async (req, res) => {
 
     res.status(200).json({ conversationId: conversation._id, messages });
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch chat history", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch chat history", error: err.message });
   }
 });
 
@@ -141,7 +158,9 @@ router.delete("/messages-delete", async (req, res) => {
 
     res.status(200).json({ message: "Message deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting message", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting message", error: err.message });
   }
 });
 
@@ -153,7 +172,9 @@ router.delete("/conversations/:conversationId/messages", async (req, res) => {
     await Message.deleteMany({ conversationId: req.params.conversationId });
     res.status(200).json({ message: "All messages deleted in conversation" });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting messages", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting messages", error: err.message });
   }
 });
 
@@ -167,7 +188,9 @@ router.delete("/conversations/:conversationId", async (req, res) => {
 
     res.status(200).json({ message: "Conversation and all messages deleted" });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting conversation", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting conversation", error: err.message });
   }
 });
 
@@ -191,13 +214,19 @@ router.post("/admin/send", auth, async (req, res) => {
           receiverId: u._id,
           content,
         });
+
+        console.log("Saving message for receiver:", u._id); // Debug log
+
         return await message.save();
       })
     );
+    console.log("All messages sent successfully"); // Debug log
 
     res.status(201).json(messages);
   } catch (err) {
-    res.status(500).json({ message: "Failed to send admin message", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Failed to send admin message", error: err.message });
   }
 });
 
