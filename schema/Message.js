@@ -12,6 +12,11 @@ const messageSchema = new mongoose.Schema({
     ref: "AccountCreate",
     required: true
   },
+  receiverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AccountCreate",
+    required: true,
+  },
   content: {
     type: String,
     required: true
