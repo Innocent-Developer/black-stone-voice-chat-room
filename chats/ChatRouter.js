@@ -1,17 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const Message = require("../schema/Message");
-const auth = require("../middleware/authMiddleware");
 const Conversation = require("../schema/Conversation");
+const User = require("../schema/account-create");
+const auth = require("../middleware/authMiddleware");
 
-// Send a message
+// ----------------------------------------
+// Send a direct message (with auth)
+// ----------------------------------------
 router.post("/send", auth, async (req, res) => {
   const { receiverId, content } = req.body;
 
   if (!receiverId || !content) {
-    return res
-      .status(400)
-      .json({ message: "Receiver and content are required" });
+    return res.status(400).json({ message: "Receiver and content are required" });
   }
 
   try {
@@ -24,16 +25,15 @@ router.post("/send", auth, async (req, res) => {
     await message.save();
     res.status(201).json(message);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to send message", error: err.message });
+    res.status(500).json({ message: "Failed to send message", error: err.message });
   }
 });
 
-// Get messages between current user and another user
-// routes/chat.js
+// ----------------------------------------
+// Get messages between authenticated user and another user
+// ----------------------------------------
 router.get("/conversation/:receiverId", auth, async (req, res) => {
-  const receiverId = req.params.receiverId;
+  const { receiverId } = req.params;
 
   try {
     const messages = await Message.find({
@@ -45,12 +45,13 @@ router.get("/conversation/:receiverId", auth, async (req, res) => {
 
     res.json(messages);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch conversation", error: err.message });
+    res.status(500).json({ message: "Failed to fetch conversation", error: err.message });
   }
 });
 
+// ----------------------------------------
+// Create or get a conversation
+// ----------------------------------------
 router.post("/conversations", async (req, res) => {
   const { senderId, receiverId } = req.body;
 
@@ -66,16 +67,13 @@ router.post("/conversations", async (req, res) => {
 
     res.status(200).json(conversation);
   } catch (err) {
-    res.status(500).json({
-      message: "Failed to get/create conversation",
-      error: err.message,
-    });
+    res.status(500).json({ message: "Failed to get/create conversation", error: err.message });
   }
 });
 
-// POST /api/messages
-// body: { conversationId, senderId, content }
-
+// ----------------------------------------
+// Send a message within a conversation
+// ----------------------------------------
 router.post("/messages", async (req, res) => {
   const { conversationId, senderId, content } = req.body;
 
@@ -84,14 +82,13 @@ router.post("/messages", async (req, res) => {
     await message.save();
     res.status(201).json(message);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to send message", error: err.message });
+    res.status(500).json({ message: "Failed to send message", error: err.message });
   }
 });
 
-// GET /api/messages/:conversationId
-
+// ----------------------------------------
+// Get messages in a conversation
+// ----------------------------------------
 router.get("/messages/:conversationId", async (req, res) => {
   try {
     const messages = await Message.find({
@@ -100,16 +97,17 @@ router.get("/messages/:conversationId", async (req, res) => {
 
     res.status(200).json(messages);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to get messages", error: err.message });
+    res.status(500).json({ message: "Failed to get messages", error: err.message });
   }
 });
+
+// ----------------------------------------
+// Get full chat history between two users
+// ----------------------------------------
 router.get("/history/:user1Id/:user2Id", async (req, res) => {
   const { user1Id, user2Id } = req.params;
 
   try {
-    // Find the conversation between both users
     const conversation = await Conversation.findOne({
       members: { $all: [user1Id, user2Id] },
     });
@@ -118,22 +116,20 @@ router.get("/history/:user1Id/:user2Id", async (req, res) => {
       return res.status(404).json({ message: "No conversation found." });
     }
 
-    // Find all messages in that conversation
     const messages = await Message.find({
       conversationId: conversation._id,
-    }).sort({ timestamp: 1 }); // oldest to newest
+    }).sort({ timestamp: 1 });
 
     res.status(200).json({ conversationId: conversation._id, messages });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch chat history", error: err.message });
+    res.status(500).json({ message: "Failed to fetch chat history", error: err.message });
   }
 });
 
-// delet chats
-// Delete a Single Message
-router.delete("/messages-delete/", async (req, res) => {
+// ----------------------------------------
+// Delete a single message
+// ----------------------------------------
+router.delete("/messages-delete", async (req, res) => {
   const { messageId } = req.body;
 
   try {
@@ -145,39 +141,63 @@ router.delete("/messages-delete/", async (req, res) => {
 
     res.status(200).json({ message: "Message deleted successfully" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error deleting message", error: err.message });
+    res.status(500).json({ message: "Error deleting message", error: err.message });
   }
 });
 
-// Delete All Messages in a Conversation
+// ----------------------------------------
+// Delete all messages in a conversation
+// ----------------------------------------
 router.delete("/conversations/:conversationId/messages", async (req, res) => {
-  const { conversationId } = req.params;
-
   try {
-    await Message.deleteMany({ conversationId });
+    await Message.deleteMany({ conversationId: req.params.conversationId });
     res.status(200).json({ message: "All messages deleted in conversation" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error deleting messages", error: err.message });
+    res.status(500).json({ message: "Error deleting messages", error: err.message });
   }
 });
 
-// Delete a Conversation (and all its messages)
+// ----------------------------------------
+// Delete an entire conversation and its messages
+// ----------------------------------------
 router.delete("/conversations/:conversationId", async (req, res) => {
-  const { conversationId } = req.params;
-
   try {
-    await Message.deleteMany({ conversationId });
-    await Conversation.findByIdAndDelete(conversationId);
+    await Message.deleteMany({ conversationId: req.params.conversationId });
+    await Conversation.findByIdAndDelete(req.params.conversationId);
 
     res.status(200).json({ message: "Conversation and all messages deleted" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error deleting conversation", error: err.message });
+    res.status(500).json({ message: "Error deleting conversation", error: err.message });
+  }
+});
+
+// ----------------------------------------
+// Send a message from admin to all users
+// ----------------------------------------
+router.post("/admin/send", auth, async (req, res) => {
+  const { content } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ message: "Content is required" });
+  }
+
+  try {
+    const users = await User.find({ _id: { $ne: req.user.id } });
+
+    const messages = await Promise.all(
+      users.map(async (u) => {
+        const message = new Message({
+          senderId: req.user.id,
+          receiverId: u._id,
+          content,
+        });
+        return await message.save();
+      })
+    );
+
+    res.status(201).json(messages);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to send admin message", error: err.message });
   }
 });
 
