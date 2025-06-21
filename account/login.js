@@ -4,15 +4,15 @@ const AccountCreate = require("../schema/account-create");
 
 const login = async (req, res) => {
   try {
-    const { userName, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!userName || !password) {
+    if (!email || !password) {
       return res
         .status(400)
-        .json({ message: "Username and password are required." });
+        .json({ message: "email and password are required." });
     }
 
-    const user = await AccountCreate.findOne({ userName });
+    const user = await AccountCreate.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid username or password." });
     }
