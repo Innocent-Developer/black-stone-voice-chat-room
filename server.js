@@ -8,8 +8,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+
+app.use(cors({
+  origin: "", // ✅ allow frontend origin
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 app.use(express.json());
-app.use(cors());
 
 const dbconnect = require("./db connect/dbconnect");
 const router = require("./routers/Routes.js");
