@@ -4,7 +4,7 @@ const CoinPrice = require("../schema/coinPrice-schema");
 
 const approveWithdrawal = async (req, res) => {
   try {
-    const id = req.body;
+    const {id} = req.body;
 
     if (!id) {
       return res.status(400).json({ message: "Withdrawal ID is required." });
