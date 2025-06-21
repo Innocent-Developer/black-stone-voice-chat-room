@@ -57,6 +57,10 @@ const accountCreateSchema = new schema(
       type:String,
       default:"Other"
     },
+    isBlock:{
+      type:Boolean,
+      default:false
+    },
     followers: [
       {
         type: Number,
