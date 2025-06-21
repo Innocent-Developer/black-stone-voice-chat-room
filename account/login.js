@@ -6,36 +6,52 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate input
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "email and password are required." });
+      return res.status(400).json({ message: "Email and password are required." });
     }
 
+    // Find user
     const user = await AccountCreate.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "Invalid username or password." });
+      return res.status(400).json({ message: "Invalid email or password." });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    let isMatch = false;
+
+    // Try bcrypt comparison
+    try {
+      isMatch = await bcrypt.compare(password, user.password);
+    } catch (err) {
+      isMatch = false;
+    }
+
+    // Fallback to plain text if not a bcrypt hash
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid username or password." });
+      isMatch = password === user.password;
     }
 
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password." });
+    }
+
+    // Generate JWT
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || "default_jwt_secret",
       { expiresIn: "1h" }
     );
 
-    // Optional: sanitize user data before sending it
+    // Exclude password before sending user data
     const { password: pwd, ...userData } = user.toObject();
 
+    // Send response
     res.status(200).json({
       message: "Login successful.",
       token,
       user: userData,
     });
+
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
