@@ -8,34 +8,34 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(
-  cors({
-    origin: "http://localhost:3000", // frontend URL
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+// Allow all origins and methods for CORS
+app.use(cors({
+  origin: true, // allow all origins dynamically
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
+}));
+
 app.use(express.json());
 
 const dbconnect = require("./db connect/dbconnect");
 const router = require("./routers/Routes.js");
 
 dbconnect();
+
 const passport = require("passport");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
-require("./google-congif/passport.js"); // <-- Load Passport config
 
-const sendAdminBroadcast = require("./officalMassege/createMassege.js");
+require("./google-congif/passport.js");
 
 // Express routes
 app.use("/", router);
 
-// Basic health check
+// Health check
 app.get("/", (req, res) => {
   res.send(`Server Successfully started on port ${PORT}`);
 });
+
 app.use(cookieParser());
 app.use(
   session({
@@ -48,32 +48,28 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Create HTTP server from Express
+// Create HTTP server
 const server = http.createServer(app);
 
-// Setup Socket.IO
+// Setup Socket.IO with open CORS
 const io = socketIo(server, {
   cors: {
-    origin: (origin, callback) => {
-      callback(null, true); // accept all
-    },
+    origin: "*", // allow all origins
     methods: ["GET", "POST"],
   },
 });
 
-// Socket.IO Logic
+// Socket.IO logic
 io.on("connection", (socket) => {
   console.log(`New socket connected: ${socket.id}`);
 
-  // Join specific chat room
   socket.on("join_room", (roomId) => {
     socket.join(roomId);
     console.log(`Socket ${socket.id} joined room ${roomId}`);
   });
 
-  // Message sending
   socket.on("send_message", (data) => {
-    io.to(data.room).emit("receive_message", data); // Send to everyone in room
+    io.to(data.room).emit("receive_message", data);
   });
 
   socket.on("disconnect", () => {
@@ -81,7 +77,9 @@ io.on("connection", (socket) => {
   });
 });
 
-// send massege for amin to all users
+// Broadcast message to all users
+const sendAdminBroadcast = require("./officalMassege/createMassege.js");
+
 app.post("/admin/broadcast", async (req, res) => {
   const { adminId, message } = req.body;
 
@@ -98,9 +96,10 @@ app.post("/admin/broadcast", async (req, res) => {
   }
 });
 
-// google sign-in
+// Google OAuth route
 app.use("/auth", require("./auths/auth.js"));
-// Start server with HTTP+Socket.IO
+
+// Start server
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
