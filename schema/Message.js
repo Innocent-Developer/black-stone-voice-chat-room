@@ -17,6 +17,12 @@ const messageSchema = new mongoose.Schema({
     ref: "AccountCreate",
     required: true,
   },
+  tital:{
+    type:String
+  },
+  image:{
+    type:String
+  },
   content: {
     type: String,
     required: true
