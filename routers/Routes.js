@@ -41,7 +41,7 @@ const getFeedbackById = require("../Feedback/getFeedbackById");
 const chatRouter = require("../chats/ChatRouter")
 
 // account routes
-router.post("/signup", signup);
+router.post("/account-creation/:id", signup);
 router.post("/login", login);
 router.post("/user/account/delete/a/time", deleteUser);
 

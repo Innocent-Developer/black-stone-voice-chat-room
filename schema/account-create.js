@@ -51,11 +51,9 @@ const accountCreateSchema = new schema(
     },
     country:{
       type:String,
-      default:"global"
     },
     gender:{
       type:String,
-      default:"Other"
     },
     isBlock:{
       type:Boolean,
