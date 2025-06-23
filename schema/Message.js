@@ -17,15 +17,17 @@ const messageSchema = new mongoose.Schema({
     ref: "AccountCreate",
     required: true,
   },
-  tital:{
-    type:String
-  },
-  image:{
-    type:String
+  title: {
+    type: String,
+    default: "",
   },
   content: {
     type: String,
-    required: true
+    required: true,
+  },
+  image: {
+    type: String, // URL string
+    default: "",
   },
   timestamp: {
     type: Date,
