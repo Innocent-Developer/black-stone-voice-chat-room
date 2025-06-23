@@ -73,12 +73,10 @@ router.post("/conversations", async (req, res) => {
 
     res.status(200).json(conversation);
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to get/create conversation",
-        error: err.message,
-      });
+    res.status(500).json({
+      message: "Failed to get/create conversation",
+      error: err.message,
+    });
   }
 });
 
@@ -198,7 +196,7 @@ router.delete("/conversations/:conversationId", async (req, res) => {
 // Send a message from admin to all users
 // ----------------------------------------
 router.post("/admin/send", auth, async (req, res) => {
-  const { content } = req.body;
+  const { title, content, image } = req.body;
 
   if (!content) {
     return res.status(400).json({ message: "Content is required" });
@@ -212,21 +210,19 @@ router.post("/admin/send", auth, async (req, res) => {
         const message = new Message({
           senderId: req.user.id,
           receiverId: u._id,
+          title,
           content,
+          image,
         });
-
-        console.log("Saving message for receiver:", u._id); // Debug log
-
         return await message.save();
       })
     );
-    console.log("All messages sent successfully"); // Debug log
 
     res.status(201).json(messages);
   } catch (err) {
     res
       .status(500)
-      .json({ message: "Failed to send admin message", error: err.message });
+      .json({ message: "Failed to send message", error: err.message });
   }
 });
 
