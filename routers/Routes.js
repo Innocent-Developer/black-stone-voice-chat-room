@@ -98,9 +98,9 @@ router.post("/admin/add/banner", addBanner);
 router.get("/client/get/banner", getBanner);
 router.get("/client/get/banner/i/d/full/n/:id",getBannerbyid)
 
-setInterval(() => {
-  autoExpireBanners();
-}, 60 * 1000); // every 1 minute
+// setInterval(() => {
+//   autoExpireBanners();
+// }, 60 * 1000); // every 1 minute
 
 // user post thing
 router.post("/client/post/create", createPost);
