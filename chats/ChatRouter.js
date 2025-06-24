@@ -225,5 +225,14 @@ router.post("/admin/send", auth, async (req, res) => {
       .json({ message: "Failed to send message", error: err.message });
   }
 });
-
+  router.get("/admin/get/messages", auth, async (req, res) => {
+  try {
+    const messages = await Message.find({ senderId: req.user.id });
+    res.status(200).json(messages);
+  } catch (err) {
+    res
+    .status(500)
+    .json({ message: "Failed to fetch messages", error: err.message });
+  }
+  });
 module.exports = router;
