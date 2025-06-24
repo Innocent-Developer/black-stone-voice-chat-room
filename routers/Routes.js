@@ -38,7 +38,8 @@ const getAllMerchants = require("../Merchant/getAllMerchants");
 const getMerchantById = require("../Merchant/getMerchantById");
 const getBannerbyid = require("../Banner/getBannerById");
 const getFeedbackById = require("../Feedback/getFeedbackById");
-const chatRouter = require("../chats/ChatRouter")
+const chatRouter = require("../chats/ChatRouter");
+const getPost = require("../schema/post-schema");
 
 // account routes
 router.post("/account-creation/:id", signup);
@@ -61,7 +62,7 @@ router.post(
 router.post("/client/feedback", postFeedback);
 router.get("/admin/all/feedback", getFeedback);
 router.post("/admin/update/feedback", updateStatus);
-router.get("/admin/get/feedback/:id",getFeedbackById);
+router.get("/admin/get/feedback/:id", getFeedbackById);
 
 // buy coins
 router.post("/client/buy-coins", buyCoins);
@@ -78,7 +79,7 @@ router.post("/merchant/buy-coin", require("../Merchant/merchantCoinBuy"));
 router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
 router.post("/merchant/approve/sell/coin/a/live", approveCoinsell);
 router.get("/get/all/a/vvpi/merchants", getAllMerchants);
-router.get("/get/merchant/user/o/bsvcr/user/find/:ui_id",getMerchantById)
+router.get("/get/merchant/user/o/bsvcr/user/find/:ui_id", getMerchantById);
 
 // withdrawal
 router.post("/client/withdrawal/request", requestWithdrawal);
@@ -96,7 +97,7 @@ router.post("/client/gift/send", sendGift);
 // baner add
 router.post("/admin/add/banner", addBanner);
 router.get("/client/get/banner", getBanner);
-router.get("/client/get/banner/i/d/full/n/:id",getBannerbyid)
+router.get("/client/get/banner/i/d/full/n/:id", getBannerbyid);
 
 // setInterval(() => {
 //   autoExpireBanners();
@@ -113,7 +114,7 @@ router.delete("/post/delete", async (req, res) => {
   const { postId } = req.body;
 
   try {
-    const deleted = await Post.findByIdAndDelete(postId);
+    const deleted = await getPost.findByIdAndDelete(postId);
 
     if (!deleted) {
       return res.status(404).json({ message: "Post not found" });
@@ -121,7 +122,9 @@ router.delete("/post/delete", async (req, res) => {
 
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Error deleting post", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting post", error: err.message });
   }
 });
 // PUT /post/update
@@ -129,7 +132,7 @@ router.put("/post/update", async (req, res) => {
   const { postId, title, content, tags, images } = req.body;
 
   try {
-    const post = await Post.findById(postId);
+    const post = await getPost.findById(postId);
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -142,13 +145,15 @@ router.put("/post/update", async (req, res) => {
     if (images !== undefined) post.images = images;
 
     const updatedPost = await post.save();
-    res.status(200).json({ message: "Post updated successfully", post: updatedPost });
+    res
+      .status(200)
+      .json({ message: "Post updated successfully", post: updatedPost });
   } catch (err) {
-    res.status(500).json({ message: "Error updating post", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error updating post", error: err.message });
   }
 });
-
-
 
 // follow/following
 router.post("/client/follow", followUser);
@@ -156,12 +161,10 @@ router.post("/client/follow", followUser);
 // store device token
 router.post("/client/store-device-token", storeDeviceToken);
 
-// chats by admin 
+// chats by admin
 router.use("/chats", chatRouter);
-
 
 // user chat routes
 router.use("/chats/users", chatRouter);
-
 
 module.exports = router;
