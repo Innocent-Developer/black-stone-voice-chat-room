@@ -14,7 +14,6 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
-app.options("*", cors());   // handle preflight globally
 
 app.use(express.json({ limit: '10mb' })); // or higher
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
