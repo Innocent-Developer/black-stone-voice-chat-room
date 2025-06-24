@@ -3,48 +3,85 @@ const http = require("http");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const socketIo = require("socket.io");
-const passport = require("passport");
-
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ Allow all origins and methods for CORS (including mobile/web/admin apps)
+// Allow all origins and methods for CORS
 app.use(cors({
-  origin: true,            // dynamically reflects request origin
-  credentials: true,       // allow credentials (cookies/sessions)
+  origin: true, // allow all origins dynamically
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
 }));
 app.options("*", cors());   // handle preflight globally
 
-// ✅ Parse JSON and form data
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '10mb' })); // or higher
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ✅ Cookie and session middleware
+const dbconnect = require("./db connect/dbconnect");
+const router = require("./routers/Routes.js");
 
+dbconnect();
 
-// ✅ Passport configuration (Google login or local auth)
+const passport = require("passport");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+
 require("./google-congif/passport.js");
+
+// Express routes
+app.use("/", router);
+
+// Health check
+app.get("/", (req, res) => {
+  res.send(`Server Successfully started on port ${PORT}`);
+});
+
+app.use(cookieParser());
+app.use(
+  session({
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ✅ MongoDB Connection
-const dbconnect = require("./db connect/dbconnect");
-dbconnect();
+// Create HTTP server
+const server = http.createServer(app);
 
-// ✅ All routes
-const router = require("./routers/Routes.js");
-app.use("/", router);
-
-// ✅ Health check route
-app.get("/", (req, res) => {
-  res.send(`✅ Server is running on port ${PORT}`);
+// Setup Socket.IO with open CORS
+const io = socketIo(server, {
+  cors: {
+    origin: "*", // allow all origins
+    methods: ["GET", "POST"],
+  },
 });
 
-// ✅ Admin Broadcast Message Route (with Socket.IO)
+// Socket.IO logic
+io.on("connection", (socket) => {
+  console.log(`New socket connected: ${socket.id}`);
+
+  socket.on("join_room", (roomId) => {
+    socket.join(roomId);
+    console.log(`Socket ${socket.id} joined room ${roomId}`);
+  });
+
+  socket.on("send_message", (data) => {
+    io.to(data.room).emit("receive_message", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`Socket disconnected: ${socket.id}`);
+  });
+});
+
+// Broadcast message to all users
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
+
 app.post("/admin/broadcast", async (req, res) => {
   const { adminId, message } = req.body;
 
@@ -56,44 +93,15 @@ app.post("/admin/broadcast", async (req, res) => {
     await sendAdminBroadcast(Number(adminId), message, io);
     res.status(200).json({ status: "✅ Broadcast sent successfully" });
   } catch (error) {
-    console.error("❌ Broadcast Error:", error);
+    console.error("❌ Error in broadcast route:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// ✅ Google OAuth routes
+// Google OAuth route
 app.use("/auth", require("./auths/auth.js"));
 
-// ✅ Create HTTP server
-const server = http.createServer(app);
-
-// ✅ Socket.IO Setup with Open CORS
-const io = socketIo(server, {
-  cors: {
-    origin: "*", // Allow all origins for sockets (safe if no credentials)
-    methods: ["GET", "POST"],
-  },
-});
-
-// ✅ Socket.IO Logic
-io.on("connection", (socket) => {
-  console.log(`🔌 Socket connected: ${socket.id}`);
-
-  socket.on("join_room", (roomId) => {
-    socket.join(roomId);
-    console.log(`🟢 Joined room: ${roomId}`);
-  });
-
-  socket.on("send_message", (data) => {
-    io.to(data.room).emit("receive_message", data);
-  });
-
-  socket.on("disconnect", () => {
-    console.log(`🔌 Socket disconnected: ${socket.id}`);
-  });
-});
-
-// ✅ Start Server
+// Start server
 server.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
