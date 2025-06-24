@@ -4,8 +4,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const socketIo = require("socket.io");
 const passport = require("passport");
-const session = require("express-session");
-const cookieParser = require("cookie-parser");
+
 
 dotenv.config();
 const app = express();
@@ -24,12 +23,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ✅ Cookie and session middleware
-app.use(cookieParser());
-app.use(session({
-  secret: process.env.JWT_SECRET || "supersecret",
-  resave: false,
-  saveUninitialized: false,
-}));
+
 
 // ✅ Passport configuration (Google login or local auth)
 require("./google-congif/passport.js");
