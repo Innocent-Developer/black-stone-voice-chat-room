@@ -108,6 +108,47 @@ router.get("/client/post/get", getAllPost);
 router.post("/client/post/get/user", getPostUser);
 router.post("/client/post/like", likePostUser);
 router.post("/client/post/comment", commentPostUser);
+// DELETE /post/delete
+router.delete("/post/delete", async (req, res) => {
+  const { postId } = req.body;
+
+  try {
+    const deleted = await Post.findByIdAndDelete(postId);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting post", error: err.message });
+  }
+});
+// PUT /post/update
+router.put("/post/update", async (req, res) => {
+  const { postId, title, content, tags, images } = req.body;
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Update fields
+    if (title !== undefined) post.title = title;
+    if (content !== undefined) post.content = content;
+    if (tags !== undefined) post.tags = tags;
+    if (images !== undefined) post.images = images;
+
+    const updatedPost = await post.save();
+    res.status(200).json({ message: "Post updated successfully", post: updatedPost });
+  } catch (err) {
+    res.status(500).json({ message: "Error updating post", error: err.message });
+  }
+});
+
+
 
 // follow/following
 router.post("/client/follow", followUser);
