@@ -11,6 +11,7 @@ const chatMessageSchema = new mongoose.Schema({
 const roomSchema = new mongoose.Schema({
   roomName: String,
   roomId: { type: String, unique: true },
+  userId: { type: String }, // ui_id of the room creator
   roomLabel: { type: String, enum: ["Public", "Private"] },
   roomKey: {
     type: String,
