@@ -184,7 +184,7 @@ router.get('/room/:roomId/chat', roomController.getMessages);
 // admin room controllers
 router.get("/admin/rooms", roomController.getAllRooms);
 router.get("/admin/room/:roomId", roomController.getRoomById);  
-router.get("/ban/room", roomController.banRoom );  
+router.post("/ban/room", roomController.banRoom );  
 router.put("/admin/room-chat-toggle/:roomId", roomController.adminChatBan);
 
 // auto Expiry of rooms
