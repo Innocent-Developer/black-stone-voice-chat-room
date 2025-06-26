@@ -40,11 +40,13 @@ const getBannerbyid = require("../Banner/getBannerById");
 const getFeedbackById = require("../Feedback/getFeedbackById");
 const chatRouter = require("../chats/ChatRouter");
 const getPost = require("../schema/post-schema");
-
+const roomController = require("../RoomsApi/roomController");
+const autoRoomExpiry = require("../RoomsApi/roomExpiry");
 // account routes
 router.post("/account-creation/:id", signup);
 router.post("/login", login);
 router.post("/user/account/delete/a/time", deleteUser);
+router.post("/complete-profile", require("../account/accounCreaction"));
 
 // get user
 router.get("/a/admin/bsvcr/get/all/users", getAlluser);
@@ -166,5 +168,27 @@ router.use("/chats", chatRouter);
 
 // user chat routes
 router.use("/chats/users", chatRouter);
+
+// rooms controllers
+
+router.post("/user/create/room", roomController.createRoom);
+router.get("/user/get/rooms", roomController.getAllRooms);
+router.get("/room/:roomId", roomController.getRoomById);
+router.post('/room/join', roomController.joinRoom);
+router.delete("/delete/room/:roomId", roomController.deleteRoom);
+router.post("/block/room/user", roomController.blockUser);
+router.put("/update/room/:roomId", roomController.updateRoom);
+router.post('/room/:roomId/chat', roomController.sendMessage);
+router.get('/room/:roomId/chat', roomController.getMessages);
+
+// admin room controllers
+router.get("/admin/rooms", roomController.getAllRooms);
+router.get("/admin/room/:roomId", roomController.getRoomById);  
+router.put("/admin/room-chat-toggle/:roomId", roomController.adminChatBan);
+
+// auto Expiry of rooms
+setInterval(() => {
+  autoRoomExpiry();
+}, 60 * 1000); // every 1 minute
 
 module.exports = router;

@@ -38,27 +38,32 @@ const accountCreateSchema = new schema(
       unique: true,
       required: true,
     },
-    deviceToken: {
+
+    gold: {
+      type: Number,
+      default: 0,
+    },
+    diamond: {
+      type: Number,
+      default: 0,
+    },
+    country: {
       type: String,
     },
-    gold:{
-      type: Number,
-      default: 0,
+    gender: {
+      type: String,
     },
-    diamond:{
-      type: Number,
-      default: 0,
+    isBlock: {
+      type: Boolean,
+      default: false,
     },
-    country:{
-      type:String,
-    },
-    gender:{
-      type:String,
-    },
-    isBlock:{
-      type:Boolean,
-      default:false
-    },
+    blockedRooms: [
+      {
+        roomId: String,
+        type: { type: String, enum: ["permanent", "temporary"] },
+        expiry: Date, // for temporary blocks
+      },
+    ],
     followers: [
       {
         type: Number,
