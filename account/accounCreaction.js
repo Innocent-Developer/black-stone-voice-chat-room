@@ -1,38 +1,41 @@
 const AccountCreate = require("../schema/account-create.js");
 
-const completeProfile = async (req, res) => {
+const completeUserProfile = async (req, res) => {
   try {
     const { email, userName, gender, country, avatarUrl } = req.body;
 
-    if (!email || !userName) {
-      return res.status(400).json({ message: "email and userName are required" });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
     }
 
-    // Check for existing user from Google OAuth
     const user = await AccountCreate.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found. Please sign in with Google first." });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Prevent updating userName if already set
-    if (user.userName) {
-      return res.status(409).json({ message: "userName already set. Profile already completed." });
+    // Check if the new userName is already taken by another user
+    if (userName && userName !== user.userName) {
+      const userNameTaken = await AccountCreate.findOne({ userName });
+      if (userNameTaken && userNameTaken.email !== email) {
+        return res.status(409).json({ message: "Username already taken" });
+      }
+      user.userName = userName;
     }
 
-    // Update additional profile fields
-    user.userName = userName;
-    user.gender = gender || user.gender;
-    user.country = country || user.country;
-    user.avatarUrl = avatarUrl || user.avatarUrl;
+    // Update other fields
+    if (gender) user.gender = gender;
+    if (country) user.country = country;
+    if (avatarUrl) user.avatarUrl = avatarUrl;
 
     await user.save();
 
-    res.status(200).json({ message: "Profile completed successfully", user });
+    res.status(200).json({ message: "Profile updated successfully", data: user });
+
   } catch (error) {
-    console.error("Complete profile error:", error.message);
+    console.error("Profile update error:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-module.exports = completeProfile;
+module.exports = completeUserProfile;
