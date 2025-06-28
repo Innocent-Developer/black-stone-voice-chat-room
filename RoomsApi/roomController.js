@@ -81,13 +81,14 @@ exports.blockUser = async (req, res) => {
 // Join Room
 exports.joinRoom = async (req, res) => {
   try {
-    const { roomId, ui_id } = req.body;
+    const { roomId, ui_id, roomKey } = req.body;
 
     const room = await Room.findOne({ roomId });
     const user = await User.findOne({ ui_id });
 
     if (!room || !user)
       return res.status(404).json({ error: "Room or User not found" });
+
     // Check if room is banned
     if (room.roomBan?.isBanned) {
       const now = new Date();
@@ -127,14 +128,25 @@ exports.joinRoom = async (req, res) => {
     if (room.members.length >= room.maxUsers)
       return res.status(403).json({ error: "Room is full" });
 
-    room.members.push(ui_id); // Push ui_id instead of _id
+    // Private room: require correct key
+    if (room.roomLabel === "Private") {
+      if (!roomKey || roomKey !== room.roomKey) {
+        return res.status(401).json({ error: "Invalid or missing room key" });
+      }
+    }
+
+    // Add user to room
+    room.members.push(ui_id);
     await room.save();
 
-    res.status(200).json({ message: "User joined room" });
+    res.status(200).json({
+      message: `User joined ${room.roomLabel.toLowerCase()} room successfully`,
+    });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 // chat in room
 // POST /room/:roomId/chat
