@@ -140,10 +140,12 @@ exports.joinRoom = async (req, res) => {
 // POST /room/:roomId/chat
 exports.sendMessage = async (req, res) => {
   try {
-    const { roomId, ui_id, message } = req.body;
+    const { roomId } = req.params; // ✅ Get roomId from URL params
+    const { ui_id, message } = req.body;
 
     const room = await Room.findOne({ roomId });
     if (!room) return res.status(404).json({ error: "Room not found" });
+
     // Check if room is banned
     if (room.roomBan?.isBanned) {
       const now = new Date();
