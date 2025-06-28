@@ -140,8 +140,7 @@ exports.joinRoom = async (req, res) => {
 // POST /room/:roomId/chat
 exports.sendMessage = async (req, res) => {
   try {
-    const { roomId } = req.body;
-    const { ui_id, message } = req.body;
+    const { roomId, ui_id, message } = req.body;
 
     const room = await Room.findOne({ roomId });
     if (!room) return res.status(404).json({ error: "Room not found" });
