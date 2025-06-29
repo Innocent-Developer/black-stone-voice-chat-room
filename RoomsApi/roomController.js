@@ -130,8 +130,8 @@ exports.joinRoom = async (req, res) => {
       return res.status(400).json({ message: "User already in room" });
     }
 
-    if (room.members.length >= room.maxUsers)
-      return res.status(403).json({ error: "Room is full" });
+    // if (room.members.length >= room.maxUsers)
+    //   return res.status(403).json({ error: "Room is full" });
 
     // Private room: require correct key
     if (room.roomLabel === "Private") {
