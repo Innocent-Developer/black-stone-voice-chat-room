@@ -11,7 +11,7 @@ const chatMessageSchema = new mongoose.Schema({
 const roomSchema = new mongoose.Schema({
   roomName: String,
   roomId: { type: String, unique: true },
-  userId: { type: String }, // ui_id of the room creator
+  ui_id: { type: Number, required: true }, // ui_id of the room creator
   roomLabel: { type: String, enum: ["Public", "Private"] },
   roomKey: {
     type: String,
@@ -19,12 +19,12 @@ const roomSchema = new mongoose.Schema({
       return this.roomLabel === "Private";
     },
   },
+
   roomImage: String,
   roomThemeImage: String,
   createdAt: { type: Date, default: Date.now },
   expiresAt: { type: Date }, // room auto-deletion
   members: [{ type: String }], // use ui_id directly as string
-  maxUsers: { type: Number, default: 20 },
   chat: [chatMessageSchema], // <-- now this works fine
   chatEnabled: {
     type: Boolean,

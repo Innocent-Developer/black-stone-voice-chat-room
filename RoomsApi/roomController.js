@@ -10,6 +10,7 @@ exports.createRoom = async (req, res) => {
   try {
     let roomId;
     let existingRoom;
+     const { ui_id } = req.body;
 
     // Ensure roomId is unique
     do {
@@ -18,8 +19,12 @@ exports.createRoom = async (req, res) => {
     } while (existingRoom);
 
     req.body.roomId = roomId;
+    const roomData = {
+      ...req.body,
+      members: [ui_id], // Add the user as the first member
+    };
 
-    const room = await Room.create(req.body);
+    const room = await Room.create(roomData);
     res.status(201).json(room);
   } catch (err) {
     res.status(400).json({ error: err.message });
