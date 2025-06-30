@@ -8,7 +8,9 @@ const login = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required." });
     }
 
     // Find user
@@ -51,7 +53,6 @@ const login = async (req, res) => {
       token,
       user: userData,
     });
-
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error", error: error.message });

@@ -42,6 +42,7 @@ const chatRouter = require("../chats/ChatRouter");
 const getPost = require("../schema/post-schema");
 const roomController = require("../RoomsApi/roomController");
 const autoRoomExpiry = require("../RoomsApi/roomExpiry");
+const getAllTransactionMerchants = require("../Merchant/getAlltransactionMerchants");
 // account routes
 router.post("/account-creation/:id", signup);
 router.post("/login", login);
@@ -82,6 +83,7 @@ router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
 router.post("/merchant/approve/sell/coin/a/live", approveCoinsell);
 router.get("/get/all/a/vvpi/merchants", getAllMerchants);
 router.get("/get/merchant/user/o/bsvcr/user/find/:ui_id", getMerchantById);
+
 
 // withdrawal
 router.post("/client/withdrawal/request", requestWithdrawal);
