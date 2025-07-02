@@ -34,6 +34,7 @@ exports.createRoom = async (req, res) => {
 exports.deleteRoom = async (req, res) => {
   try {
     await Room.findOneAndDelete({ roomId: req.params.roomId });
+    
     res.status(200).json({ message: "Room deleted" });
   } catch (err) {
     res.status(400).json({ error: err.message });
