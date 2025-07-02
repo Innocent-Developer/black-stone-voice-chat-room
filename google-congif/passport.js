@@ -1,12 +1,82 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const AccountCreate = require("../schema/account-create");
-const dotenv = require("dotenv");
-const generateUniqueUIID = require("../utils/generateUniqueUIID");
 const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+
+const AccountCreate = require("../schema/account-create");
+const generateUniqueUIID = require("../utils/generateUniqueUIID");
+
 dotenv.config();
+
+// Register Google Strategy
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "https://www.blackstonevoicechatroom.online/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails?.[0]?.value;
+        const name = profile.displayName || "Unnamed User";
+        const googleId = profile.id;
+        const avatarUrl = profile.photos?.[0]?.value;
+
+        if (!email) {
+          return done(new Error("Google account email not found."), null);
+        }
+
+        // Find existing user
+        let user = await AccountCreate.findOne({ email });
+
+        if (!user) {
+          // Create new user
+          user = new AccountCreate({
+            name,
+            email,
+            userName: googleId,
+            avatarUrl: avatarUrl || null,
+            isVerified: true,
+            password: null, // Google users don't have a password
+            phoneNumber: `google-${googleId}`,
+            ui_id: await generateUniqueUIID(),
+          });
+
+          await user.save();
+          console.log("✅ New user created via Google");
+        } else {
+          console.log("✅ Existing user authenticated via Google");
+        }
+
+        // Attach JWT token to the user
+        const token = jwt.sign(
+          {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            userName: user.userName,
+            ui_id: user.ui_id,
+            isVerified: user.isVerified,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "7d" }
+        );
+
+        user.token = token; // Add token to the user object (can be used in redirect or response)
+
+        return done(null, user);
+      } catch (error) {
+        console.error("❌ Error in GoogleStrategy:", error);
+        return done(error, null);
+      }
+    }
+  )
+);
+
+// Session support (optional, only if you're using session-based auth)
 passport.serializeUser((user, done) => {
-  done(null, user.id); // store MongoDB _id in session
+  done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
@@ -18,74 +88,4 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL:
-        "https://www.blackstonevoicechatroom.online/auth/google/callback",
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        console.log("✅ Google profile received:", profile);
-
-        const existingUser = await AccountCreate.findOne({
-          email: profile.emails[0].value,
-        });
-
-        if (existingUser) {
-          console.log("✅ User found in DB");
-
-          // ✅ Generate JWT for existing user
-          const token = jwt.sign(
-            {
-              id: existingUser._id,
-              name: existingUser.name,
-              email: existingUser.email,
-              userName: existingUser.userName,
-              ui_id: existingUser.ui_id,
-              isVerified: existingUser.isVerified,
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-          );
-
-          existingUser.token = token; // ✅ Attach token
-          return done(null, existingUser);
-        }
-
-        const newUser = new AccountCreate({
-          name: profile.displayName,
-          email: profile.emails[0].value,
-          userName: profile.displayName,
-          password: profile.id,
-          isVerified: true,
-          phoneNumber: `google-${profile.id}`,
-          ui_id: await generateUniqueUIID(),
-        });
-
-        await newUser.save();
-        console.log("✅ New user created");
-
-        // ✅ Generate JWT for new user
-        const token = jwt.sign(
-          {
-            id: newUser._id,
-            name: newUser.name,
-            email: newUser.email,
-            userName: newUser.userName,
-            ui_id: newUser.ui_id,
-            isVerified: newUser.isVerified,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "7d" }
-        );
-        done(null, newUser);
-      } catch (err) {
-        console.error("❌ Google OAuth error:", err);
-        done(err, null);
-      }
-    }
-  )
-);
+module.exports = passport;

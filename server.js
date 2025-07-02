@@ -2,42 +2,28 @@ const express = require("express");
 const http = require("http");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const passport = require("passport");
 const socketIo = require("socket.io");
 
 dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Allow all origins and methods for CORS
+// --- Middlewares ---
 app.use(cors({
-  origin: true, // allow all origins dynamically
+  origin: true, // explicitly allow frontend domains
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true
+  credentials: true,
 }));
 
-app.use(express.json({ limit: '10mb' })); // or higher
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-const dbconnect = require("./db connect/dbconnect");
-const router = require("./routers/Routes.js");
-
-dbconnect();
-
-const passport = require("passport");
-const session = require("express-session");
-const cookieParser = require("cookie-parser");
-
-require("./google-congif/passport.js");
-
-// Express routes
-app.use("/", router);
-
-// Health check
-app.get("/", (req, res) => {
-  res.send(`Server Successfully started on port ${PORT}`);
-});
-
 app.use(cookieParser());
+
+// --- Session setup (optional, if NOT using JWT only) ---
 app.use(
   session({
     secret: process.env.JWT_SECRET,
@@ -46,27 +32,39 @@ app.use(
   })
 );
 
+// --- Passport ---
+require("./google-congif/passport.js");
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Create HTTP server
-const server = http.createServer(app);
+// --- MongoDB ---
+const dbconnect = require("./db connect/dbconnect");
+dbconnect();
 
-// Setup Socket.IO with open CORS
+// --- Routes ---
+const router = require("./routers/Routes.js");
+app.use("/", router);
+app.use("/auth", require("./auths/auth.js")); // Google OAuth routes
+
+app.get("/", (req, res) => {
+  res.send(`✅ Server Successfully started on port ${PORT}`);
+});
+
+// --- Socket.IO ---
+const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "*", // allow all origins
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
 
-// Socket.IO logic
 io.on("connection", (socket) => {
-  console.log(`New socket connected: ${socket.id}`);
+  console.log(`📡 New socket connected: ${socket.id}`);
 
   socket.on("join_room", (roomId) => {
     socket.join(roomId);
-    console.log(`Socket ${socket.id} joined room ${roomId}`);
+    console.log(`📥 Socket ${socket.id} joined room ${roomId}`);
   });
 
   socket.on("send_message", (data) => {
@@ -74,13 +72,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log(`Socket disconnected: ${socket.id}`);
+    console.log(`❌ Socket disconnected: ${socket.id}`);
   });
 });
 
-// Broadcast message to all users
+// --- Admin broadcast (optional custom logic) ---
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
-
 app.post("/admin/broadcast", async (req, res) => {
   const { adminId, message } = req.body;
 
@@ -97,10 +94,7 @@ app.post("/admin/broadcast", async (req, res) => {
   }
 });
 
-// Google OAuth route
-app.use("/auth", require("./auths/auth.js"));
-
-// Start server
+// --- Start server ---
 server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
