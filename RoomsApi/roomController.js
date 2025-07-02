@@ -335,3 +335,25 @@ exports.usergetAllroomsdRooms = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 }
+
+
+exports.kickOffMember = async (req, res) => {
+  try {
+    const { roomId, ui_id } = req.body;
+
+    const room = await Room.findOne({ roomId });
+    if (!room) return res.status(404).json({ error: "Room not found" });
+
+    const isMember = room.members.includes(ui_id);
+    if (!isMember) return res.status(404).json({ error: "Member not found in room" });
+
+    room.members.pull(ui_id);
+    await room.save();
+
+    res.status(200).json({ message: "Member kicked off successfully", room });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+
