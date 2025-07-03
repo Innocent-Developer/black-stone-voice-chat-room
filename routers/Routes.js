@@ -44,7 +44,12 @@ const getPost = require("../schema/post-schema");
 const roomController = require("../RoomsApi/roomController");
 const autoRoomExpiry = require("../RoomsApi/roomExpiry");
 const getAllTransactionMerchants = require("../Merchant/getAlltransactionMerchants");
-const items = require("../Shop/main");
+
+const createItem = require("../Shop/createItem");
+const buyItem = require("../Shop/Buyitem");
+const deleteItem = require("../Shop/deleteItem");
+const updateItem = require("../Shop/Updateitem");
+const getAllItems = require("../Shop/getAllitem");
 // account routes
 router.post("/account-creation/:id", signup);
 router.post("/login", login);
@@ -200,6 +205,10 @@ setInterval(() => {
 
 
 // Shops 
-app.use("/shop",items)
+items.post("/shop/create", createItem)
+items.post("/shop/buy", buyItem)
+items.delete("/shop/delete/item", deleteItem)
+items.post("/shop/update/item", updateItem)
+items.get("/shop/items", getAllItems)
 
 module.exports = router;
