@@ -1,0 +1,24 @@
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
+const HistorySchema = new Schema({
+  itemCode: {
+    type: Number,
+    required: true
+  },
+  itemPrice: {
+    type: Number,
+    required: true
+  },
+  ui_id: {
+    type: Number,
+    required: true
+  },
+  time: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Export the model
+module.exports = mongoose.model("History", HistorySchema);

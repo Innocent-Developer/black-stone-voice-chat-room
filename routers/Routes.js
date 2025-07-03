@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const app = express();
 
 const signup = require("../account/signup");
 const login = require("../account/login");
@@ -43,6 +44,7 @@ const getPost = require("../schema/post-schema");
 const roomController = require("../RoomsApi/roomController");
 const autoRoomExpiry = require("../RoomsApi/roomExpiry");
 const getAllTransactionMerchants = require("../Merchant/getAlltransactionMerchants");
+const items = require("../Shop/main");
 // account routes
 router.post("/account-creation/:id", signup);
 router.post("/login", login);
@@ -195,5 +197,9 @@ router.put("/admin/room-chat-toggle/:roomId", roomController.adminChatBan);
 setInterval(() => {
   autoRoomExpiry();
 }, 60 * 1000); // every 1 minute
+
+
+// Shops 
+app.use("/shop",items)
 
 module.exports = router;
