@@ -205,10 +205,10 @@ setInterval(() => {
 
 
 // Shops 
-items.post("/shop/create", createItem)
-items.post("/shop/buy", buyItem)
-items.delete("/shop/delete/item", deleteItem)
-items.post("/shop/update/item", updateItem)
-items.get("/shop/items", getAllItems)
+router.post("/shop/create", createItem)
+router.post("/shop/buy", buyItem)
+router.delete("/shop/delete/item", deleteItem)
+router.post("/shop/update/item", updateItem)
+router.get("/shop/items", getAllItems)
 
 module.exports = router;
