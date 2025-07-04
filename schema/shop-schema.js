@@ -24,11 +24,7 @@ const ShopSchema = new Schema({
     unique: true, // Ensure itemCode is unique
   },
   category: { type: String, required: true },
-  prices: {
-    "7day": { type: Number, default: 0 },
-    "14day": { type: Number, default: 0 },
-    "30day": { type: Number, default: 0 },
-  },
+  
 });
 
 // Pre-save middleware to auto-generate itemCode
