@@ -23,6 +23,10 @@ const ShopSchema = new Schema({
         type: Number,
         unique: true, // Ensure itemCode is unique
     },
+    category:{
+        type:{String,enum: ["Entrance", "Frame","Bubble chat","Theme"]},
+        required: true,
+    }
 });
 
 // Pre-save middleware to auto-generate itemCode
