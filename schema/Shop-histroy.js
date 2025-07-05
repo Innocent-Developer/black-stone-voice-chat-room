@@ -10,6 +10,12 @@ const HistorySchema = new Schema({
     type: Number,
     required: true
   },
+  durication:{
+    type:String ,
+    required: true,
+    enum: ["7day", "14day", "30day"]
+    
+  },
   ui_id: {
     type: Number,
     required: true

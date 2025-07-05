@@ -2,15 +2,13 @@ const Shop = require("../schema/shop-schema");
 const AccountCreate = require("../schema/account-create");
 const History = require("../schema/Shop-histroy"); // Ensure the filename is correct
 
-const buyItem = async (req, res) => {
+const adminSendGift = async (req, res) => {
   try {
     const { itemCode, ui_id, durication } = req.body;
 
     // Validate input
     if (!itemCode || !ui_id || !durication) {
-      return res
-        .status(400)
-        .json({ message: "itemCode, ui_id, and durication are required" });
+      return res.status(400).json({ message: "itemCode, ui_id, and durication are required" });
     }
 
     // Find item
@@ -22,9 +20,7 @@ const buyItem = async (req, res) => {
     // Get price for selected duration
     const itemPrice = item.itemPrices?.[durication];
     if (itemPrice == null) {
-      return res
-        .status(400)
-        .json({ message: `Price for duration '${durication}' not available` });
+      return res.status(400).json({ message: `Price for duration '${durication}' not available` });
     }
 
     // Find user
@@ -33,12 +29,8 @@ const buyItem = async (req, res) => {
       return res.status(400).json({ message: "Account not found" });
     }
 
-    if (itemPrice > account.gold) {
-      return res.status(400).json({ message: "Insufficient balance" });
-    }
-
-    // Deduct price
-    account.gold -= itemPrice;
+    // Add gift to user's account
+    account.gold += itemPrice;
     await account.save();
 
     // Save history
@@ -50,16 +42,12 @@ const buyItem = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "Item purchased successfully",
-      remainingGold: account.gold,
-      itemPurchased: item.itemName,
+      message: "Gift sent successfully",
+      newBalance: account.gold,
+      itemGifted: item.itemName,
     });
   } catch (error) {
-    console.error("Buy item error:", error.message);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    console.error("Admin send gift error:", error.message);
+    return res.status(500).json({ message: "Server error while sending gift" });
   }
-};
-
-module.exports = buyItem;
+}
