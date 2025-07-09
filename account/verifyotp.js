@@ -19,6 +19,8 @@ const verifyOtp = async (req, res) => {
       password: temp.password,
       gender: temp.gender,
       country: temp.country,
+      avatarUrl: temp.avatarUrl,
+      userName: temp.userName,
       ui_id: temp.ui_id,
     });
 

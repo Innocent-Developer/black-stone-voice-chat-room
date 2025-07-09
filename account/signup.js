@@ -28,7 +28,7 @@ const generateUniqueUiId = async () => {
 };
 
 const accountCreate = async (req, res) => {
-  const { email, password, gender, country } = req.body;
+  const { email, password, gender, country,avatarUrl ,userName } = req.body;
 
   try {
     if (!email || !password || !gender || !country) {
@@ -50,6 +50,8 @@ const accountCreate = async (req, res) => {
       gender,
       country,
       ui_id,
+      userName,
+      avatarUrl,
       otp,
       createdAt: Date.now(),
     };
