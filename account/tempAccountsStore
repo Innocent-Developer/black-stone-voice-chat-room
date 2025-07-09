@@ -1,0 +1,2 @@
+const tempAccounts = {};
+module.exports = tempAccounts;

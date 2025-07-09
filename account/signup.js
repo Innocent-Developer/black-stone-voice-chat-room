@@ -1,47 +1,72 @@
 const AccountCreate = require("../schema/account-create.js");
+const nodemailer = require("nodemailer");
+const bcrypt = require("bcryptjs");
 
-const updateProfile = async (req, res) => {
+const tempAccounts = {}; // Temporary store for OTP and user data
+
+// Mail configuration
+const transporter = nodemailer.createTransport({
+  host: "mail.privateemail.com", // Namecheap's SMTP server
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.MAIL,
+    pass: process.env.MAIL_PASSWORD,
+  },
+});
+
+// Generate a unique 6-digit ui_id
+const generateUniqueUiId = async () => {
+  let ui_id;
+  let exists = true;
+  while (exists) {
+    ui_id = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+    const found = await AccountCreate.findOne({ ui_id });
+    if (!found) exists = false;
+  }
+  return ui_id;
+};
+
+const accountCreate = async (req, res) => {
+  const { email, password, gender, country } = req.body;
+
   try {
-    const userId = req.params.id;
-    const { userName, gender, country, image } = req.body;
-
-    // Validate required fields
-    if (!userName || !gender || !country) {
-      return res.status(400).json({ message: "userName, gender, and country are required." });
+    if (!email || !password || !gender || !country) {
+      return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Find user by ID
-    const user = await AccountCreate.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
+    const existingUser = await AccountCreate.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists." });
     }
 
-    // Update allowed fields
-    user.userName = userName;
-    user.gender = gender;
-    user.country = country;
+    const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const ui_id = await generateUniqueUiId(); // Generate unique UI ID
 
-    // Optional field
-    if (image) {
-      user.avatarUrl = image;
-    }
+    tempAccounts[email] = {
+      email,
+      password: hashedPassword,
+      gender,
+      country,
+      ui_id,
+      otp,
+      createdAt: Date.now(),
+    };
 
-    await user.save();
-
-    res.status(200).json({
-      message: "User updated successfully.",
-      user: {
-        id: user._id,
-        userName: user.userName,
-        gender: user.gender,
-        country: user.country,
-        image: user.avatarUrl || null,
-      },
+    await transporter.sendMail({
+      from: process.env.MAIL,
+      to: email,
+      subject: "Verify your account",
+      text: `Your OTP is: ${otp}`,
     });
+
+    res.status(200).json({ message: "OTP sent to email." });
   } catch (error) {
-    console.error("Update error:", error.message);
+    console.error("Error in account creation:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-module.exports = updateProfile;
+module.exports = accountCreate;
+module.exports.tempAccounts = tempAccounts; // Export for OTP verification

@@ -1,8 +1,19 @@
 const AccountCreate = require("../schema/account-create.js");
+const profileOtps = require("./tempOtpStore");
+const nodemailer = require("nodemailer");
+
+// Email config
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "your-email@gmail.com",
+    pass: "your-app-password",
+  },
+});
 
 const completeUserProfile = async (req, res) => {
   try {
-    const { email, userName, gender, country, avatarUrl } = req.body;
+    const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
@@ -14,26 +25,26 @@ const completeUserProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if the new userName is already taken by another user
-    if (userName && userName !== user.userName) {
-      const userNameTaken = await AccountCreate.findOne({ userName });
-      if (userNameTaken && userNameTaken.email !== email) {
-        return res.status(409).json({ message: "Username already taken" });
-      }
-      user.userName = userName;
-    }
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    profileOtps[email] = {
+      otp,
+      data: req.body, // Save all update data temporarily
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5-minute expiry
+    };
 
-    // Update other fields
-    if (gender) user.gender = gender;
-    if (country) user.country = country;
-    if (avatarUrl) user.avatarUrl = avatarUrl;
+    // Send OTP
+    await transporter.sendMail({
+      from: "your-email@gmail.com",
+      to: email,
+      subject: "Verify Profile Update",
+      text: `Your OTP for updating your profile is: ${otp}`,
+    });
 
-    await user.save();
-
-    res.status(200).json({ message: "Profile updated successfully", data: user });
+    res.status(200).json({ message: "OTP sent to your email for profile update verification." });
 
   } catch (error) {
-    console.error("Profile update error:", error.message);
+    console.error("Send OTP for profile update error:", error.message);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

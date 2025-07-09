@@ -50,8 +50,11 @@ const buyItem = require("../Shop/Buyitem");
 const deleteItem = require("../Shop/deleteItem");
 const updateItem = require("../Shop/Updateitem");
 const getAllItems = require("../Shop/getAllitem");
+const adminSendGift = require("../Shop/adminSendGift");
+const merchantCoinAdd = require("../admin/merchantCoinAdd");
 // account routes
-router.post("/account-creation/:id", signup);
+router.post("/account/create/new",signup)
+router.post("/verify-otp", require("../account/verifyotp"));
 router.post("/login", login);
 router.post("/user/account/delete/a/time", deleteUser);
 router.post("/complete-profile", require("../account/accounCreaction"));
@@ -90,6 +93,9 @@ router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
 router.post("/merchant/approve/sell/coin/a/live", approveCoinsell);
 router.get("/get/all/a/vvpi/merchants", getAllMerchants);
 router.get("/get/merchant/user/o/bsvcr/user/find/:ui_id", getMerchantById);
+
+// admin coin add merchants 
+router.post("/admin/merchant/coin/add/fast",merchantCoinAdd);
 
 
 // withdrawal
@@ -210,5 +216,7 @@ router.post("/shop/buy", buyItem)
 router.delete("/shop/delete/item", deleteItem)
 router.post("/shop/update/item", updateItem)
 router.get("/shop/items", getAllItems)
+router.post("/admin/send/item", adminSendGift)
+
 
 module.exports = router;
