@@ -28,11 +28,14 @@ const agencies = new schema({
         enum: ["block", "unblock"],
         default: "unblock",
     },
+    createrId: {
+        type: Number,
+        required: true,
+    },
     joinUsers: [
         {
             ui_id: {
                 type: Number,
-                required: true,
             },
         }
     ],
