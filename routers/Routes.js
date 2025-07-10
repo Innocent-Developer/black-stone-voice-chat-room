@@ -52,6 +52,10 @@ const updateItem = require("../Shop/Updateitem");
 const getAllItems = require("../Shop/getAllitem");
 const adminSendGift = require("../Shop/adminSendGift");
 const merchantCoinAdd = require("../admin/merchantCoinAdd");
+const { getAllAgency } = require("../Agency-System/Getallagency");
+const CreateAgency = require("../Agency-System/createAgency");
+const updateAgency = require("../Agency-System/Udateagency");
+const joinAgency = require("../Agency-System/JoinAgency");
 // account routes
 router.post("/account/create/new",signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -217,6 +221,13 @@ router.delete("/shop/delete/item", deleteItem)
 router.post("/shop/update/item", updateItem)
 router.get("/shop/items", getAllItems)
 router.post("/admin/send/item", adminSendGift)
+
+
+// Agency 
+router.get("/api/v1/get/all/agency", getAllAgency )
+router.post("/api/v1/agency/create",CreateAgency);
+router.post("/api/v1/join/agency",joinAgency); 
+router.post("/api/v1/agency/update", updateAgency);
 
 
 module.exports = router;
