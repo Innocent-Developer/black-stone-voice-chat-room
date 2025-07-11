@@ -14,10 +14,11 @@ const accountCreateSchema = new schema(
       type: String,
       required: true,
       unique: true,
+      match: [/\S+@\S+\.\S+/, 'Please use a valid email address.'], // Email validation
     },
     phoneNumber: {
       type: String,
-      
+      sparse: true, // Allow `null` and `undefined` values
     },
     password: {
       type: String,
@@ -35,7 +36,6 @@ const accountCreateSchema = new schema(
       unique: true,
       required: true,
     },
-
     gold: {
       type: Number,
       default: 0,
