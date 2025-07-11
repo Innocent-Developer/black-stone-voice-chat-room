@@ -1,21 +1,21 @@
-const express = require("express");
 const AccountCreate = require("../schema/account-create");
 const OtpVerification = require("../schema/OtpVerification");
-
-
 
 const otpVerification = async (req, res) => {
   const { email, otp } = req.body;
 
   try {
-    const temp = await OtpVerification.findOne({ email });
-
-    if (!temp) {
-      return res.status(400).json({ message: "OTP expired or not found." });
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required." });
     }
 
-    if (parseInt(otp) !== temp.otp) {
-      return res.status(401).json({ message: "Invalid OTP." });
+    const temp = await OtpVerification.findOne({ email });
+    if (!temp) {
+      return res.status(400).json({ message: "Invalid or expired OTP." });
+    }
+
+    if (otp !== temp.otp) {
+      return res.status(401).json({ message: "Incorrect OTP." });
     }
 
     const newUser = new AccountCreate({
@@ -31,7 +31,18 @@ const otpVerification = async (req, res) => {
     await newUser.save();
     await OtpVerification.deleteOne({ email });
 
-    res.status(201).json({ message: "Account created successfully.", user: newUser });
+    // Return safe info only
+    res.status(201).json({
+      message: "Account created successfully.",
+      user: {
+        email: newUser.email,
+        gender: newUser.gender,
+        country: newUser.country,
+        avatarUrl: newUser.avatarUrl,
+        userName: newUser.userName,
+        ui_id: newUser.ui_id,
+      },
+    });
   } catch (error) {
     console.error("OTP verification error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
