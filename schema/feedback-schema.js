@@ -4,7 +4,7 @@ const schema = mongoose.Schema;
 const feedbackSchema = new schema({
   name: {
     type: String,
-    required: true,
+    required: false,
   },
   uid: {
     type: String,

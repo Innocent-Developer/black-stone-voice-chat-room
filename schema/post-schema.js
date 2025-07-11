@@ -5,7 +5,6 @@ const postSchema = new schema(
   {
     title: {
       type: String,
-      required: true,
       trim: true,
     },
     content: {

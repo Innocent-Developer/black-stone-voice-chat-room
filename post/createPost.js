@@ -3,9 +3,9 @@ const User = require("../schema/account-create");
 
 const createPost = async (req, res) => {
   try {
-    const { title, content, images, ui_id, tags } = req.body;
+    const {  content, images, ui_id, tags } = req.body;
 
-    if (!title || !content || !ui_id) {
+    if ( !content || !ui_id) {
       return res
         .status(400)
         .json({ message: "Title, content, and ui_id are required." });

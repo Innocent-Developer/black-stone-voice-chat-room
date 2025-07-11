@@ -1,12 +1,12 @@
-const AccountCreate = require("../schema/account-create.js");
-const nodemailer = require("nodemailer");
+const express = require("express");
 const bcrypt = require("bcryptjs");
+const nodemailer = require("nodemailer");
+const AccountCreate = require("../schema/account-create");
+const OtpVerification = require("../schema/OtpVerification");
 
-const tempAccounts = {}; // Temporary store for OTP and user data
-
-// Mail configuration
+// Email config (inside the file)
 const transporter = nodemailer.createTransport({
-  host: "mail.privateemail.com", // Namecheap's SMTP server
+  host: "mail.privateemail.com",
   port: 465,
   secure: true,
   auth: {
@@ -15,20 +15,20 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Generate a unique 6-digit ui_id
+// Generate unique UI ID
 const generateUniqueUiId = async () => {
   let ui_id;
   let exists = true;
   while (exists) {
-    ui_id = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+    ui_id = Math.floor(100000 + Math.random() * 900000).toString();
     const found = await AccountCreate.findOne({ ui_id });
     if (!found) exists = false;
   }
   return ui_id;
 };
 
-const accountCreate = async (req, res) => {
-  const { email, password, gender, country,avatarUrl ,userName } = req.body;
+const signup =  async (req, res) => {
+  const { email, password, gender, country, avatarUrl, userName } = req.body;
 
   try {
     if (!email || !password || !gender || !country) {
@@ -40,35 +40,35 @@ const accountCreate = async (req, res) => {
       return res.status(409).json({ message: "User already exists." });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000);
     const hashedPassword = await bcrypt.hash(password, 10);
-    const ui_id = await generateUniqueUiId(); // Generate unique UI ID
+    const ui_id = await generateUniqueUiId();
 
-    tempAccounts[email] = {
+    await OtpVerification.findOneAndDelete({ email }); // Remove old OTP
+
+    await new OtpVerification({
       email,
-      password: hashedPassword,
+      otp,
+      hashedPassword,
       gender,
       country,
       ui_id,
-      userName,
       avatarUrl,
-      otp,
-      createdAt: Date.now(),
-    };
+      userName,
+    }).save();
 
     await transporter.sendMail({
       from: process.env.MAIL,
       to: email,
-      subject: "Verify your account",
+      subject: "Verify Your Account",
       text: `Your OTP is: ${otp}`,
     });
 
     res.status(200).json({ message: "OTP sent to email." });
   } catch (error) {
-    console.error("Error in account creation:", error);
+    console.error("Signup error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-module.exports = accountCreate;
-module.exports.tempAccounts = tempAccounts; // Export for OTP verification
+module.exports = signup;

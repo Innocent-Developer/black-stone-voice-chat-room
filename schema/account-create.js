@@ -17,8 +17,7 @@ const accountCreateSchema = new schema(
     },
     phoneNumber: {
       type: String,
-      unique: true,
-      sparse: true, // Allows multiple `null` values
+      
     },
     password: {
       type: String,
