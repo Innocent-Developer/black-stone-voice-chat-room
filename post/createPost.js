@@ -3,12 +3,10 @@ const User = require("../schema/account-create");
 
 const createPost = async (req, res) => {
   try {
-    const {  content, images, ui_id, tags } = req.body;
+    const { title, content, images, ui_id, tags } = req.body;
 
-    if ( !content || !ui_id) {
-      return res
-        .status(400)
-        .json({ message: " content, and ui_id are required." });
+    if (!content || !ui_id) {
+      return res.status(400).json({ message: "content and ui_id are required." });
     }
 
     // Check if user exists
@@ -17,11 +15,7 @@ const createPost = async (req, res) => {
       return res.status(404).json({ message: "Author not found." });
     }
 
-    // if (images && !Array.isArray(images)) {
-    //   return res.status(400).json({ message: "Images must be an array." });
-    // }
-
-    // 🔢 Get the latest post_id (if any), or default to 2000
+    // 🔢 Get the latest post_id (if any), or default to 4001
     const lastPost = await Post.findOne().sort({ post_id: -1 }).lean();
     const nextPostId = lastPost?.post_id ? lastPost.post_id + 1 : 4001;
 
