@@ -12,49 +12,49 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- Middlewares ---
+// --- CORS Middleware (Allow all origins) ---
 app.use(cors({
-  origin: true, // explicitly allow frontend domains
+  origin: "*", // Accept requests from all domains
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
+// --- Body Parsers ---
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// --- Session setup (optional, if NOT using JWT only) ---
+// --- Session Middleware (Only if needed) ---
 app.use(
   session({
-    secret: process.env.JWT_SECRET,
+    secret: process.env.JWT_SECRET || "default_secret",
     resave: false,
     saveUninitialized: false,
   })
 );
 
-// --- Passport ---
+// --- Passport Init ---
 require("./google-congif/passport.js");
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- MongoDB ---
+// --- Connect to MongoDB ---
 const dbconnect = require("./db connect/dbconnect");
 dbconnect();
 
 // --- Routes ---
-const router = require("./routers/Routes.js");
-app.use("/", router);
-app.use("/auth", require("./auths/auth.js")); // Google OAuth routes
+app.use("/", require("./routers/Routes.js"));
+app.use("/auth", require("./auths/auth.js"));
 
 app.get("/", (req, res) => {
   res.send(`✅ Server Successfully started on port ${PORT}`);
 });
 
-// --- Socket.IO ---
+// --- Socket.IO Setup ---
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "*",
+    origin: "*", // Allow all for WebSocket as well
     methods: ["GET", "POST"],
   },
 });
@@ -76,8 +76,9 @@ io.on("connection", (socket) => {
   });
 });
 
-// --- Admin broadcast (optional custom logic) ---
+// --- Admin Broadcast Route ---
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
+
 app.post("/admin/broadcast", async (req, res) => {
   const { adminId, message } = req.body;
 
@@ -94,7 +95,7 @@ app.post("/admin/broadcast", async (req, res) => {
   }
 });
 
-// --- Start server ---
+// --- Start Server ---
 server.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
