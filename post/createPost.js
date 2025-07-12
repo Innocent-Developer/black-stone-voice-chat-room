@@ -8,7 +8,7 @@ const createPost = async (req, res) => {
     if ( !content || !ui_id) {
       return res
         .status(400)
-        .json({ message: "Title, content, and ui_id are required." });
+        .json({ message: " content, and ui_id are required." });
     }
 
     // Check if user exists
