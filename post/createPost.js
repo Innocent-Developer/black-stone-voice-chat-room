@@ -23,7 +23,7 @@ const createPost = async (req, res) => {
 
     // 🔢 Get the latest post_id (if any), or default to 2000
     const lastPost = await Post.findOne().sort({ post_id: -1 }).lean();
-    const nextPostId = lastPost?.post_id ? lastPost.post_id + 1 : 2001;
+    const nextPostId = lastPost?.post_id ? lastPost.post_id + 1 : 4001;
 
     // Create post with incremented post_id
     const newPost = new Post({
