@@ -8,13 +8,12 @@ const messageSchema = new mongoose.Schema({
     // required: true
   },
   senderId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "AccountCreate",
+    type:Number,
+
     required: true
   },
   receiverId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "AccountCreate",
+    type:Number,
     required: true,
   },
   title: {

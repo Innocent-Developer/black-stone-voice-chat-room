@@ -8,8 +8,8 @@ const auth = require("../middleware/authMiddleware");
 // ----------------------------------------
 // Send a direct message (with auth)
 // ----------------------------------------
-router.post("/send", auth, async (req, res) => {
-  const { receiverId, content } = req.body;
+router.post("/send", async (req, res) => {
+  const { senderId,receiverId, content } = req.body;
 
   if (!receiverId || !content) {
     return res
@@ -19,7 +19,7 @@ router.post("/send", auth, async (req, res) => {
 
   try {
     const message = new Message({
-      senderId: req.user.id,
+      senderId,
       receiverId,
       content,
     });
