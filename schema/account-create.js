@@ -23,13 +23,7 @@ const accountCreateSchema = new Schema(
       type: String,
       index: { unique: true, sparse: true },
     },
-    titaltags:[
-      {
-        tag: { type: String,},
-        isDefault: { type: Boolean, default: false }
-      },
-      
-    ],
+    titleTag: { type: String, default: "" },
 
     password: { type: String, required: true },
     avatarUrl: String,
