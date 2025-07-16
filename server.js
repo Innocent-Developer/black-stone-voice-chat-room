@@ -45,7 +45,7 @@ app.use("/", require("./routers/Routes.js"));
 app.use("/auth", require("./auths/auth.js"));
 
 app.get("/", (req, res) => {
-  res.send(`✅ Server Successfully started on port ${PORT}`);
+  res.send(`✅ Server Successfully started `);
 });
 
 // --- Admin Broadcast Route (Removed io) ---
@@ -69,5 +69,5 @@ app.post("/admin/broadcast", async (req, res) => {
 
 // --- Start Server ---
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Server is running `);
 });
