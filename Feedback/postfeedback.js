@@ -5,7 +5,7 @@ const postFeedback = async (req, res) => {
     const { name, uid, email, problemType, description, image } = req.body;
 
     // Validate required fields
-    if (!name || !uid || !email || !problemType) {
+    if (!name || !uid || !email ) {
       return res.status(400).json({ error: "All fields are required." });
     }
 
