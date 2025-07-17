@@ -1,28 +1,40 @@
+// server.js
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const passport = require("passport");
+const rateLimit = require("express-rate-limit");
+const NodeCache = require("node-cache");
 
 dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- CORS Middleware (Allow all origins) ---
+// In-memory cache
+const cache = new NodeCache();
+
+// Rate Limiting (100 req/min/IP)
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  message: "Too many requests, please try again later.",
+});
+
+// --- Middlewares ---
+app.use(limiter);
+app.use(compression());
 app.use(cors({
-  origin: "*", // Accept requests from all domains
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
-// --- Body Parsers ---
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// --- Session Middleware (Optional) ---
 app.use(
   session({
     secret: process.env.JWT_SECRET || "default_secret",
@@ -31,12 +43,11 @@ app.use(
   })
 );
 
-// --- Passport Init ---
 require("./google-congif/passport.js");
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- Connect to MongoDB ---
+// --- DB ---
 const dbconnect = require("./db connect/dbconnect");
 dbconnect();
 
@@ -44,30 +55,45 @@ dbconnect();
 app.use("/", require("./routers/Routes.js"));
 app.use("/auth", require("./auths/auth.js"));
 
-app.get("/", (req, res) => {
-  res.send(`✅ Server Successfully started `);
+// --- Cached Endpoint Example ---
+app.get("/api/info/:id", async (req, res) => {
+  const id = req.params.id;
+  const key = `info_${id}`;
+
+  const cached = cache.get(key);
+  if (cached) {
+    return res.json({ from: "cache", data: cached });
+  }
+
+  const data = { id, name: "Example", fetched: new Date() };
+  cache.set(key, data, 60);
+  res.json({ from: "live", data });
 });
 
-// --- Admin Broadcast Route (Removed io) ---
+// --- Admin Broadcast ---
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
 
 app.post("/admin/broadcast", async (req, res) => {
   const { adminId, message } = req.body;
-
   if (!adminId || !message) {
     return res.status(400).json({ error: "adminId and message are required." });
   }
 
   try {
-    await sendAdminBroadcast(Number(adminId), message); // removed io
-    res.status(200).json({ status: "✅ Broadcast sent successfully" });
-  } catch (error) {
-    console.error("❌ Error in broadcast route:", error);
+    await sendAdminBroadcast(Number(adminId), message);
+    res.status(200).json({ status: "✅ Broadcast sent" });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// --- Start Server ---
+// --- Health Check ---
+app.get("/", (req, res) => {
+  res.send(`✅ Server running `);
+});
+
+// --- Start ---
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running `);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
