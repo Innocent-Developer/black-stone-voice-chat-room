@@ -56,6 +56,8 @@ const { getAllAgency } = require("../Agency-System/Getallagency");
 const CreateAgency = require("../Agency-System/createAgency");
 const updateAgency = require("../Agency-System/Udateagency");
 const joinAgency = require("../Agency-System/JoinAgency");
+const applyBackgroundChange = require("../RoomsApi/backGroundChange");
+const allRequest = require("../admin/GetAllResuestofBackground");
 // account routes
 router.post("/account/create/new",signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -228,6 +230,12 @@ router.get("/api/v1/get/all/agency", getAllAgency )
 router.post("/api/v1/agency/create",CreateAgency);
 router.post("/api/v1/join/agency",joinAgency); 
 router.post("/api/v1/agency/update", updateAgency);
+
+// Room Background Change
+router.post("/api/v2/background/change/apply", applyBackgroundChange)
+router.post("/api/v2/admin/change/status/background",applyBackgroundChange);
+router.get("/api/v2/admi/get/all/background/change/apply", allRequest);
+
 
 
 module.exports = router;
