@@ -236,4 +236,23 @@ router.post("/admin/send", auth, async (req, res) => {
   }
   });
   
+  // ----------------------------------------
+// Get all messages where the user is sender or receiver
+// ----------------------------------------
+router.get("/user/all-messages",  async (req, res) => {
+  try {
+    const ui_id= req.body;
+
+    const messages = await Message.find({
+      $or: [{ senderId: ui_id }, { receiverId: ui_id }],
+    }).sort({ timestamp: -1 }); // most recent first
+
+    res.status(200).json(messages);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch user's messages", error: err.message });
+  }
+});
+
 module.exports = router;
