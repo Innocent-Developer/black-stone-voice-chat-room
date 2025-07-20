@@ -1,19 +1,17 @@
-// models/Message.js
 const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
   conversationId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Conversation",
-    // required: true
+    default: null, // allow direct messages without conversation
   },
   senderId: {
-    type:Number,
-
-    required: true
+    type: mongoose.Schema.Types.Mixed, // allows Number or ObjectId for flexibility
+    required: true,
   },
   receiverId: {
-    type:Number,
+    type: mongoose.Schema.Types.Mixed, // allows Number or ObjectId
     required: true,
   },
   title: {
@@ -25,17 +23,20 @@ const messageSchema = new mongoose.Schema({
     required: true,
   },
   image: {
-    type: String, // URL string
+    type: String, // e.g., Cloudinary or Uploadcare URL
     default: "",
   },
   timestamp: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   seen: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
+
+// Optional: Ensure a compound index for fast querying between users
+messageSchema.index({ senderId: 1, receiverId: 1, timestamp: -1 });
 
 module.exports = mongoose.model("Message", messageSchema);
