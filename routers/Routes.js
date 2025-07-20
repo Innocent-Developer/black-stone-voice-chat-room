@@ -117,6 +117,8 @@ router.get("/get/coin-price", getCoinPrice);
 
 // gift send
 router.post("/api/v2/client/gift/send", sendGift);
+router.get("/api/v2/client/gift/get/all", require("../gifts/getAllGifts"));
+router.post("/api/v2/admin/gift/create", require("../gifts/create-gift"));
 
 // baner add
 router.post("/admin/add/banner", addBanner);
