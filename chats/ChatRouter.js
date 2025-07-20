@@ -239,12 +239,12 @@ router.post("/admin/send", auth, async (req, res) => {
   // ----------------------------------------
 // Get all messages where the user is sender or receiver
 // ----------------------------------------
-router.get("/user/all-messages",  async (req, res) => {
+router.get("/user/all-messages", auth, async (req, res) => {
   try {
-    const ui_id= req.body;
+    const userId = req.user.id;
 
     const messages = await Message.find({
-      $or: [{ senderId: ui_id }, { receiverId: ui_id }],
+      $or: [{ senderId: userId }, { receiverId: userId }],
     }).sort({ timestamp: -1 }); // most recent first
 
     res.status(200).json(messages);
