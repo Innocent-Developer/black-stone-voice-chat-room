@@ -14,8 +14,8 @@ const sendOtpEmail = async (email, otp) => {
   });
 
   const mailOptions = {
-    from: `"Black Stone Voice Chat" <${process.env.MAIL}>`,
-    replyTo: process.env.MAIL,
+    from: '"BlackStone" <support@blackstonevoicechatroom.online>',
+replyTo: 'support@blackstonevoicechatroom.online',
     to: email,
     subject: "Your OTP Code for Black Stone",
     text: `Hi,\n\nYour OTP code is: ${otp}\nIt expires in 5 minutes.\n\nThanks,\nBlack Stone Voice Chat Team`,
