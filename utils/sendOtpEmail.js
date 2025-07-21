@@ -9,20 +9,16 @@ const sendOtpEmail = async (email, otp) => {
       user: process.env.MAIL, // support@blackstonevoicechatroom.online
       pass: process.env.MAIL_PASSWORD,
     },
+    logger: true,
+  debug: true,
   });
 
   const mailOptions = {
-    from: `"Black Stone Voice Chat Support" <${process.env.MAIL}>`,
+    from: `"Black Stone Support" <${process.env.MAIL}>`,
     to: email,
-    subject: "Your OTP Code - Black Stone Voice Chat",
-    text: `Hello,
+    subject: "Your Black Stone Verification Code",
+    text: `Hello, your verification code is ${otp}. It expires in 5 minutes.`,
 
-Your OTP code is: ${otp}
-
-This code is valid for 5 minutes. Please do not share it with anyone.
-
-Thanks,
-Black Stone Voice Chat Team`,
     html: `
       <!DOCTYPE html>
       <html>
