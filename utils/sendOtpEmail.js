@@ -3,7 +3,7 @@ const nodemailer = require("nodemailer");
 const sendOtpEmail = async (email, otp) => {
   const transporter = nodemailer.createTransport({
     host: "mail.privateemail.com",
-    port: 587, // Use TLS (STARTTLS)
+    port: 465, // Use TLS (STARTTLS)
     secure: false,
     auth: {
       user: process.env.MAIL, // support@blackstonevoicechatroom.online
