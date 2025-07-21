@@ -6,19 +6,20 @@ const sendOtpEmail = async (email, otp) => {
     port: 465,
     secure: true,
     auth: {
-      user: process.env.MAIL,
+      user: process.env.MAIL, // e.g., support@yourdomain.com
       pass: process.env.MAIL_PASSWORD,
     },
   });
 
   const mailOptions = {
-    from: `"Your App Name" <${process.env.MAIL}>`,
+    from: `"Black Stone Voice Chat" <${process.env.MAIL}>`,
     to: email,
-    subject: "🔐 OTP Verification Code - Your App",
+    subject: "🔐 Your OTP Code for Black Stone Voice Chat",
+    text: `Your OTP code is: ${otp}. It is valid for 5 minutes. Please do not share this code with anyone.`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border-radius: 10px; background: #f9f9f9; border: 1px solid #ddd;">
         <div style="text-align: center;">
-          <img src="https://res.cloudinary.com/dha65z0gy/image/upload/v1750568548/banners/g8682gvbhfutdriyrysw.jpg" alt="Logo" style="width: 120px; margin-bottom: 20px;" />
+          <img src="https://res.cloudinary.com/dha65z0gy/image/upload/v1750568548/banners/g8682gvbhfutdriyrysw.jpg" alt="Black Stone Logo" style="width: 120px; margin-bottom: 20px;" />
         </div>
         <h2 style="color: #333; text-align: center;">Email Verification</h2>
         <p style="font-size: 16px; color: #555; text-align: center;">
@@ -34,7 +35,7 @@ const sendOtpEmail = async (email, otp) => {
         </p>
         <hr style="margin: 30px 0;" />
         <p style="text-align: center; font-size: 12px; color: #bbb;">
-          © ${new Date().getFullYear()} Your App Name — All rights reserved.
+          © ${new Date().getFullYear()} Black Stone Voice Chat — All rights reserved.
         </p>
       </div>
     `,
