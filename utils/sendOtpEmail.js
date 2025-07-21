@@ -3,10 +3,10 @@ const nodemailer = require("nodemailer");
 const sendOtpEmail = async (email, otp) => {
   const transporter = nodemailer.createTransport({
     host: "mail.privateemail.com",
-    port: 587, // Use TLS (STARTTLS)
-    secure: false,
+    port: 587,
+    secure: false, // TLS (STARTTLS)
     auth: {
-      user: process.env.MAIL, // support@blackstonevoicechatroom.online
+      user: process.env.MAIL,
       pass: process.env.MAIL_PASSWORD,
     },
     logger: true,
@@ -15,10 +15,18 @@ const sendOtpEmail = async (email, otp) => {
 
   const mailOptions = {
     from: '"BlackStone" <support@blackstonevoicechatroom.online>',
-replyTo: 'support@blackstonevoicechatroom.online',
+    replyTo: 'support@blackstonevoicechatroom.online',
     to: email,
     subject: "Your OTP Code for Black Stone",
-    text: `Hi,\n\nYour OTP code is: ${otp}\nIt expires in 5 minutes.\n\nThanks,\nBlack Stone Voice Chat Team`,
+    text: `Hi,
+
+Your OTP code is: ${otp}
+It expires in 5 minutes.
+
+Image used in email: https://res.cloudinary.com/dha65z0gy/image/upload/v1750568548/banners/g8682gvbhfutdriyrysw.jpg
+
+Thanks,
+Black Stone Voice Chat Team`,
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
         <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
