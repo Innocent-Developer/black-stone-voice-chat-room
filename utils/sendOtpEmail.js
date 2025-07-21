@@ -2,13 +2,14 @@ const nodemailer = require("nodemailer");
 
 const sendOtpEmail = async (email, otp) => {
   const transporter = nodemailer.createTransport({
-    host: "mail.privateemail.com",
-    port: 587,
-    secure: false, // TLS (STARTTLS)
+     service: 'gmail',
     auth: {
       user: process.env.MAIL,
       pass: process.env.MAIL_PASSWORD,
     },
+     tls: {
+                        rejectUnauthorized: false
+                    },
     logger: true,
     debug: true,
   });
