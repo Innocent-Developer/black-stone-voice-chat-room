@@ -2,23 +2,26 @@ const nodemailer = require("nodemailer");
 
 const sendOtpEmail = async (email, otp) => {
   const transporter = nodemailer.createTransport({
-     service: 'gmail',
-    auth: {
-      user: process.env.MAIL,
-      pass: process.env.MAIL_PASSWORD,
-    },
-     tls: {
-                        rejectUnauthorized: false
-                    },
-    logger: true,
-    debug: true,
-  });
+  host: 'mail.privateemail.com', // or the actual mail server (check Namecheap panel)
+  port: 465, // use 587 for STARTTLS, 465 for SSL
+  secure: true, // true for port 465, false for port 587
+  auth: {
+    user: process.env.MAIL, // e.g., 'support@yourdomain.com'
+    pass: process.env.MAIL_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false, // optional, may help with self-signed certs
+  },
+  logger: true,
+  debug: true,
+});
+
 
   const mailOptions = {
-    from: '"BlackStone" <support@blackstonevoicechatroom.online>',
-    replyTo: 'support@blackstonevoicechatroom.online',
+    from: '"funChatparty" <otp@funchatparty.online',
+    replyTo: 'otp@funchatparty.online',
     to: email,
-    subject: "Your OTP Code for Black Stone",
+    subject: "Your OTP Code for funChatparty",
     text: `Hi,
 
 Your OTP code is: ${otp}
