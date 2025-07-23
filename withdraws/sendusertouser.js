@@ -23,15 +23,15 @@ const sendUserToUser = async (req, res) => {
             return res.status(404).json({ message: "Receiver not found." });
         }
         // Optional: Check if sender has enough balance (if balance tracking is implemented)
-        if (sender.gold < amount) {
+        if (sender.diamond < amount) {
             return res.status(400).json({ message: "Insufficient balance." });
         }
         
         // cut coin from sender's account
-        sender.gold -= amount;
+        sender.diamond -= amount;
         await sender.save();
         // Add coin to receiver's account
-        receiver.gold += amount;
+        receiver.diamond += amount;
         await receiver.save();
         // Create withdrawal request
         const withdrawalRequest = new Withdrawal({
