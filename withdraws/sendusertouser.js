@@ -1,4 +1,4 @@
-const Withdrawal = require("../schema/withdrawal-schema");
+// const Withdrawal = require("../schema/withdrawal-schema");
 const AccountCreate = require("../schema/account-create.js");
 
 const sendUserToUser = async (req, res) => {
@@ -34,14 +34,14 @@ const sendUserToUser = async (req, res) => {
         receiver.diamond += amount;
         await receiver.save();
         // Create withdrawal request
-        const withdrawalRequest = new Withdrawal({
-            senderUiId,
-            receiverUiId,
-            amount,
-            status: "completed", // Optional: Default status
-            completedAt: new Date(), // Optional: Timestamp
-        });
-        await withdrawalRequest.save();
+        // const withdrawalRequest = new Withdrawal({
+        //     senderUiId,
+        //     receiverUiId,
+        //     amount,
+        //     status: "completed", // Optional: Default status
+        //     completedAt: new Date(), // Optional: Timestamp
+        // });
+        // await withdrawalRequest.save();
         res.status(201).json({
             message: " transfer completed successfully.",
             sender: {
