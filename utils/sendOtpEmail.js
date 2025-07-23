@@ -42,7 +42,7 @@ Team Fun Chat Party
     <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
       <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
         <div style="text-align: center;">
-          <img src="https://res.cloudinary.com/dha65z0gy/image/upload/v1750568548/banners/g8682gvbhfutdriyrysw.jpg" alt="Fun Chat Party Banner" style="max-width: 120px; margin-bottom: 20px;" />
+          <img src="https://www.funchatparty.online/logo.jpeg" alt="Fun Chat Party Banner" style="max-width: 120px; margin-bottom: 20px;" />
         </div>
         <h2 style="text-align: center; color: #333;">🔐 Your One-Time Password</h2>
         <p style="text-align: center; color: #555; font-size: 16px;">

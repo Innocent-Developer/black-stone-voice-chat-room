@@ -39,22 +39,37 @@ const passwordResetOtp = async (req, res) => {
     });
 
     const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background: #f9f9f9; padding: 30px; border-radius: 10px; border: 1px solid #ddd;">
-        <h2 style="text-align: center; color: #000;">🔒 Password Reset Request - Black Stone Voice Chat Room</h2>
-        <hr style="margin: 20px 0;">
-        <p style="font-size: 16px; color: #333;"><strong>Black Stone Voice Chat Room</strong><br/>Password Reset Request</p>
-        <p style="font-size: 15px; color: #444;">We received a request to reset your password.<br>If you made this request, please use the One-Time Password (OTP) below to proceed.</p>
-        <div style="margin: 20px 0; text-align: center;">
-          <p style="font-size: 18px; color: #000;">🔐 <strong>Your OTP Code:</strong></p>
-          <h1 style="font-size: 40px; color: #4A90E2;">${otp}</h1>
-          <p style="font-size: 14px; color: #888;">🕒 This code will expire in 10 minutes.</p>
-          <p style="font-size: 14px; color: #D9534F;">🚫 Don't share this code with anyone, not even Black Stone support.</p>
-        </div>
-        <p style="font-size: 14px; color: #666;">If you did not request this password reset, please ignore this email.</p>
-        <br>
-        <p style="font-size: 14px; color: #333;">Thank you,<br/>Black Stone Voice Chat Room Team</p>
+  <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
+    <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+      <div style="text-align: center;">
+        <img src="https://www.funchatparty.online/logo.jpeg" alt="Fun Chat Party Banner" style="max-width: 120px; margin-bottom: 20px;" />
       </div>
-    `;
+      <h2 style="text-align: center; color: #333;">🔒 Password Reset Request - Fun Chat Party</h2>
+      <hr style="margin: 20px 0;">
+      <p style="text-align: center; color: #555; font-size: 16px;">
+        Hello! 👋<br/>
+        We received a request to reset your password for <strong>Fun Chat Party</strong>.<br/>
+        If this was you, please use the One-Time Password (OTP) below to proceed.
+      </p>
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 28px; font-weight: bold; background: #ff4081; color: white; padding: 12px 24px; border-radius: 10px;">
+          ${otp}
+        </span>
+        <p style="font-size: 14px; color: #888; margin-top: 10px;">🕒 This code will expire in 10 minutes.</p>
+        <p style="font-size: 14px; color: #D9534F;">🚫 Please do not share this code with anyone, not even Fun Chat Party support.</p>
+      </div>
+      <p style="font-size: 14px; color: #666; text-align: center;">If you did not request this password reset, please ignore this email.</p>
+      <br/>
+      <p style="text-align: center; color: #555;">Thanks for being a part of the <strong>Fun Chat Party</strong> community! 🎉</p>
+      <p style="text-align: center; color: #999; font-size: 14px;">Need help? Our support team is here for you.</p>
+      <p style="text-align: center; font-size: 12px; color: #aaa; margin-top: 40px;">
+        © ${new Date().getFullYear()} Fun Chat Party<br/>
+        📱 Let's Chat. Let's Party.
+      </p>
+    </div>
+  </div>
+`;
+
 
     await transporter.sendMail({
       from: `"Black Stone Support" <${process.env.MAIL}>`,

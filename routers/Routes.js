@@ -59,6 +59,7 @@ const joinAgency = require("../Agency-System/JoinAgency");
 const applyBackgroundChange = require("../RoomsApi/backGroundChange");
 const allRequest = require("../admin/GetAllResuestofBackground");
 const adminapplyBackgroundChange = require("../admin/ApproveRoomBAckGroundChange");
+const sendUserToUser = require("../withdraws/sendusertouser");
 // account routes
 router.post("/account/create/new",signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -110,6 +111,9 @@ router.post("/client/withdrawal/request", requestWithdrawal);
 router.post("/admin/approve/withdrawal", require("../admin/approve-withdrawl"));
 router.get("/admin/get/all/withdraws", getAllWithdraws);
 router.get("/get/user/withdraws/info/:ui_id", getwithdrawByUIID);
+
+// send user to user
+router.post("/api/v2/client/send/user/to/user", sendUserToUser);
 
 // coin price
 router.post("/admin/update/coin-price", require("../coins/coinPrice"));
