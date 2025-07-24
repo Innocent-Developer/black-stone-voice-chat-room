@@ -5,21 +5,38 @@ const Conversation = require("../schema/Conversation");
 const User = require("../schema/account-create");
 const auth = require("../middleware/authMiddleware");
 
+// Utility function for error handling
+const handleError = (res, error, defaultMessage = "An error occurred") => {
+  console.error(error);
+  res.status(500).json({ 
+    message: defaultMessage, 
+    error: error.message 
+  });
+};
+
 // ----------------------------------------
-// Send a direct message (with auth)
+// MESSAGE ENDPOINTS
 // ----------------------------------------
-router.post("/send", async (req, res) => {
-  const { senderId,receiverId, content } = req.body;
+
+// Send a direct message
+router.post("/send", auth, async (req, res) => {
+  const { receiverId, content } = req.body;
 
   if (!receiverId || !content) {
-    return res
-      .status(400)
-      .json({ message: "Receiver and content are required" });
+    return res.status(400).json({ 
+      message: "Receiver ID and content are required" 
+    });
   }
 
   try {
+    // Check if receiver exists
+    const receiver = await User.findById(receiverId);
+    if (!receiver) {
+      return res.status(404).json({ message: "Receiver not found" });
+    }
+
     const message = new Message({
-      senderId,
+      senderId: req.user.id,
       receiverId,
       content,
     });
@@ -27,15 +44,11 @@ router.post("/send", async (req, res) => {
     await message.save();
     res.status(201).json(message);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to send message", error: err.message });
+    handleError(res, err, "Failed to send message");
   }
 });
 
-// ----------------------------------------
 // Get messages between authenticated user and another user
-// ----------------------------------------
 router.get("/conversation/:receiverId", auth, async (req, res) => {
   const { receiverId } = req.params;
 
@@ -49,153 +62,170 @@ router.get("/conversation/:receiverId", auth, async (req, res) => {
 
     res.json(messages);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch conversation", error: err.message });
+    handleError(res, err, "Failed to fetch conversation");
+  }
+});
+
+// Get all messages where the user is sender or receiver
+router.get("/user/all-messages", auth, async (req, res) => {
+  try {
+    const messages = await Message.find({
+      $or: [
+        { senderId: req.user.id }, 
+        { receiverId: req.user.id }
+      ],
+    }).sort({ timestamp: -1 });
+
+    res.status(200).json(messages);
+  } catch (err) {
+    handleError(res, err, "Failed to fetch user's messages");
+  }
+});
+
+// Delete a single message (only if user is sender)
+router.delete("/messages/:messageId", auth, async (req, res) => {
+  try {
+    const message = await Message.findOne({
+      _id: req.params.messageId,
+      senderId: req.user.id
+    });
+
+    if (!message) {
+      return res.status(404).json({ 
+        message: "Message not found or unauthorized" 
+      });
+    }
+
+    await message.remove();
+    res.status(200).json({ message: "Message deleted successfully" });
+  } catch (err) {
+    handleError(res, err, "Error deleting message");
   }
 });
 
 // ----------------------------------------
-// Create or get a conversation
+// CONVERSATION ENDPOINTS
 // ----------------------------------------
-router.post("/conversations", async (req, res) => {
-  const { senderId, receiverId } = req.body;
+
+// Create or get a conversation
+router.post("/conversations", auth, async (req, res) => {
+  const { receiverId } = req.body;
+
+  if (!receiverId) {
+    return res.status(400).json({ message: "Receiver ID is required" });
+  }
 
   try {
+    // Check if receiver exists
+    const receiver = await User.findById(receiverId);
+    if (!receiver) {
+      return res.status(404).json({ message: "Receiver not found" });
+    }
+
+    // Check if conversation already exists
     let conversation = await Conversation.findOne({
-      members: { $all: [senderId, receiverId] },
+      members: { $all: [req.user.id, receiverId] },
     });
 
     if (!conversation) {
-      conversation = new Conversation({ members: [senderId, receiverId] });
+      conversation = new Conversation({ 
+        members: [req.user.id, receiverId] 
+      });
       await conversation.save();
     }
 
     res.status(200).json(conversation);
   } catch (err) {
-    res.status(500).json({
-      message: "Failed to get/create conversation",
-      error: err.message,
+    handleError(res, err, "Failed to get/create conversation");
+  }
+});
+
+// Get messages in a conversation (only if user is participant)
+router.get("/messages/:conversationId", auth, async (req, res) => {
+  try {
+    const conversation = await Conversation.findOne({
+      _id: req.params.conversationId,
+      members: req.user.id
     });
-  }
-});
 
-// ----------------------------------------
-// Send a message within a conversation
-// ----------------------------------------
-router.post("/messages", async (req, res) => {
-  const { conversationId, senderId, content } = req.body;
+    if (!conversation) {
+      return res.status(404).json({ 
+        message: "Conversation not found or unauthorized" 
+      });
+    }
 
-  try {
-    const message = new Message({ conversationId, senderId, content });
-    await message.save();
-    res.status(201).json(message);
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to send message", error: err.message });
-  }
-});
-
-// ----------------------------------------
-// Get messages in a conversation
-// ----------------------------------------
-router.get("/messages/:conversationId", async (req, res) => {
-  try {
     const messages = await Message.find({
       conversationId: req.params.conversationId,
     }).sort({ timestamp: 1 });
 
     res.status(200).json(messages);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to get messages", error: err.message });
+    handleError(res, err, "Failed to get messages");
   }
 });
 
-// ----------------------------------------
 // Get full chat history between two users
-// ----------------------------------------
-router.get("/history/:user1Id/:user2Id", async (req, res) => {
-  const { user1Id, user2Id } = req.params;
+router.get("/history/:user2Id", auth, async (req, res) => {
+  const { user2Id } = req.params;
 
   try {
     const conversation = await Conversation.findOne({
-      members: { $all: [user1Id, user2Id] },
+      members: { $all: [req.user.id, user2Id] },
     });
 
     if (!conversation) {
-      return res.status(404).json({ message: "No conversation found." });
+      return res.status(404).json({ message: "No conversation found" });
     }
 
     const messages = await Message.find({
       conversationId: conversation._id,
     }).sort({ timestamp: 1 });
 
-    res.status(200).json({ conversationId: conversation._id, messages });
+    res.status(200).json({ 
+      conversationId: conversation._id, 
+      messages 
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch chat history", error: err.message });
+    handleError(res, err, "Failed to fetch chat history");
   }
 });
 
-// ----------------------------------------
-// Delete a single message
-// ----------------------------------------
-router.delete("/messages-delete", async (req, res) => {
-  const { messageId } = req.body;
-
+// Delete an entire conversation and its messages
+router.delete("/conversations/:conversationId", auth, async (req, res) => {
   try {
-    const deleted = await Message.findByIdAndDelete(messageId);
+    const conversation = await Conversation.findOne({
+      _id: req.params.conversationId,
+      members: req.user.id
+    });
 
-    if (!deleted) {
-      return res.status(404).json({ message: "Message not found" });
+    if (!conversation) {
+      return res.status(404).json({ 
+        message: "Conversation not found or unauthorized" 
+      });
     }
 
-    res.status(200).json({ message: "Message deleted successfully" });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error deleting message", error: err.message });
-  }
-});
-
-// ----------------------------------------
-// Delete all messages in a conversation
-// ----------------------------------------
-router.delete("/conversations/:conversationId/messages", async (req, res) => {
-  try {
     await Message.deleteMany({ conversationId: req.params.conversationId });
-    res.status(200).json({ message: "All messages deleted in conversation" });
+    await conversation.remove();
+
+    res.status(200).json({ 
+      message: "Conversation and all messages deleted" 
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error deleting messages", error: err.message });
+    handleError(res, err, "Error deleting conversation");
   }
 });
 
 // ----------------------------------------
-// Delete an entire conversation and its messages
+// ADMIN ENDPOINTS
 // ----------------------------------------
-router.delete("/conversations/:conversationId", async (req, res) => {
-  try {
-    await Message.deleteMany({ conversationId: req.params.conversationId });
-    await Conversation.findByIdAndDelete(req.params.conversationId);
 
-    res.status(200).json({ message: "Conversation and all messages deleted" });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error deleting conversation", error: err.message });
-  }
-});
-
-// ----------------------------------------
 // Send a message from admin to all users
-// ----------------------------------------
 router.post("/admin/send", auth, async (req, res) => {
+  // Check if user is admin
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
   const { title, content, image } = req.body;
 
   if (!content) {
@@ -206,13 +236,14 @@ router.post("/admin/send", auth, async (req, res) => {
     const users = await User.find({ _id: { $ne: req.user.id } });
 
     const messages = await Promise.all(
-      users.map(async (u) => {
+      users.map(async (user) => {
         const message = new Message({
           senderId: req.user.id,
-          receiverId: u._id,
+          receiverId: user._id,
           title,
           content,
           image,
+          isAdminBroadcast: true
         });
         return await message.save();
       })
@@ -220,38 +251,26 @@ router.post("/admin/send", auth, async (req, res) => {
 
     res.status(201).json(messages);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to send message", error: err.message });
+    handleError(res, err, "Failed to send admin message");
   }
 });
-  router.get("/admin/get/messages", auth, async (req, res) => {
-  try {
-    const messages = await Message.find({ senderId: req.user.id });
-    res.status(200).json(messages);
-  } catch (err) {
-    res
-    .status(500)
-    .json({ message: "Failed to fetch messages", error: err.message });
+
+// Get all admin messages
+router.get("/admin/messages", auth, async (req, res) => {
+  // Check if user is admin
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Unauthorized" });
   }
-  });
-  
-  // ----------------------------------------
-// Get all messages where the user is sender or receiver
-// ----------------------------------------
-router.get("/user/all-messages", auth, async (req, res) => {
-  try {
-    const userId = req.user.id;
 
-    const messages = await Message.find({
-      $or: [{ senderId: userId }, { receiverId: userId }],
-    }).sort({ timestamp: -1 }); // most recent first
+  try {
+    const messages = await Message.find({ 
+      senderId: req.user.id,
+      isAdminBroadcast: true 
+    }).sort({ timestamp: -1 });
 
     res.status(200).json(messages);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch user's messages", error: err.message });
+    handleError(res, err, "Failed to fetch admin messages");
   }
 });
 
