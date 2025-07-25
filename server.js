@@ -27,14 +27,14 @@ const limiter = rateLimit({
 app.use(limiter);
 app.use(compression());
 app.use(cors({
-  origin: ["https://admp.funchatparty.online"],
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
-
+app.options("*", cors())
 app.use(
   session({
     secret: process.env.JWT_SECRET || "default_secret",
