@@ -22,6 +22,7 @@ const limiter = rateLimit({
   max: 100,
   message: "Too many requests, please try again later.",
 });
+// app.options("*", cors())
 
 // --- Middlewares ---
 app.use(limiter);
@@ -29,12 +30,12 @@ app.use(compression());
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization","userId"],
+  credentials: true // only if you're using cookies/sessions
 }));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
-app.options("*", cors())
 app.use(
   session({
     secret: process.env.JWT_SECRET || "default_secret",
