@@ -1,6 +1,6 @@
 {
-  "name": "backend",
-  "version": "1.0.20",
+  "name": "FunChatParty.online",
+  "version": "1.0.30",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
