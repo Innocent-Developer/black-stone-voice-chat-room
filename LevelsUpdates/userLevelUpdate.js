@@ -43,6 +43,35 @@ const calculateLevel = (xp) => {
 
   return level > 100 ? 100 : level;
 };
+const calculateLevelWithProgress = (xp) => {
+  let level = 1;
+  let accumulatedXp = 0;
+
+  for (let i = 0; i < levelXpMap.length; i++) {
+    const xpForThisLevel = levelXpMap[i];
+    if (xp < accumulatedXp + xpForThisLevel) {
+      const xpInCurrentLevel = xp - accumulatedXp;
+      const progress = (xpInCurrentLevel / xpForThisLevel) * 100;
+
+      return {
+        level,
+        xpToNextLevel: xpForThisLevel,
+        xpInCurrentLevel,
+        progressPercentage: Math.min(progress, 100).toFixed(2)
+      };
+    }
+    accumulatedXp += xpForThisLevel;
+    level++;
+  }
+
+  // Max level
+  return {
+    level: 100,
+    xpToNextLevel: 0,
+    xpInCurrentLevel: 0,
+    progressPercentage: "100.00"
+  };
+};
 
 const LevelUpdate = async (senderId, receiverId) => {
   const sender = await user.findOne({ ui_id: senderId });
@@ -52,40 +81,46 @@ const LevelUpdate = async (senderId, receiverId) => {
     throw new Error("Sender or receiver not found");
   }
 
-  // Get gift records of sender
+  // Get total XP from gift records
   const senderRecords = await giftRecords.find({ senderId });
-  const totalGiftsSent = senderRecords.reduce((total, record) => total + record.amount, 0);
+  const totalGiftsSent = senderRecords.reduce((total, r) => total + r.amount, 0);
 
-  // Get gift records of receiver
   const receiverRecords = await giftRecords.find({ receiverId });
-  const totalGiftsReceived = receiverRecords.reduce((total, record) => total + record.amount, 0);
+  const totalGiftsReceived = receiverRecords.reduce((total, r) => total + r.amount, 0);
 
-  // Update XP: Add total sent/received as XP
+  // Update XP
   sender.xp = totalGiftsSent;
   receiver.xp = totalGiftsReceived;
 
-  // Update level based on XP
-  sender.level = calculateLevel(sender.xp);
-  receiver.level = calculateLevel(receiver.xp);
+  // Calculate level and progress
+  const senderLevelData = calculateLevelWithProgress(sender.xp);
+  const receiverLevelData = calculateLevelWithProgress(receiver.xp);
+
+  sender.level = senderLevelData.level;
+  receiver.level = receiverLevelData.level;
 
   await sender.save();
   await receiver.save();
-
-  console.log(`✅ Sender (${sender.ui_id}) XP: ${sender.xp}, Level: ${sender.level}`);
-  console.log(`✅ Receiver (${receiver.ui_id}) XP: ${receiver.xp}, Level: ${receiver.level}`);
 
   return {
     sender: {
       ui_id: sender.ui_id,
       level: sender.level,
-      xp: sender.xp
+      xp: sender.xp,
+      progress: senderLevelData.progressPercentage + '%',
+      xpInCurrentLevel: senderLevelData.xpInCurrentLevel,
+      xpToNextLevel: senderLevelData.xpToNextLevel
     },
     receiver: {
       ui_id: receiver.ui_id,
       level: receiver.level,
-      xp: receiver.xp
+      xp: receiver.xp,
+      progress: receiverLevelData.progressPercentage + '%',
+      xpInCurrentLevel: receiverLevelData.xpInCurrentLevel,
+      xpToNextLevel: receiverLevelData.xpToNextLevel
     }
   };
 };
+
 
 module.exports = LevelUpdate;
