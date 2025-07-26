@@ -6,76 +6,70 @@ const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const passport = require("passport");
-const rateLimit = require("express-rate-limit");
 const NodeCache = require("node-cache");
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.set('trust proxy', true); // ✅ Trust reverse proxy (for secure cookies, etc.)
+app.set("trust proxy", true); // For secure cookies behind proxies like NGINX
 
-// In-memory cache
-const cache = new NodeCache();
-
-// Rate Limiting (optional)
-// const limiter = rateLimit({
-//   windowMs: 60 * 1000,
-//   max: 100,
-//   message: "Too many requests, please try again later.",
-// });
-// app.use(limiter);
-
-// ✅ Fix CORS with credentials
+// ✅ Allowed Frontend Origins
 const allowedOrigins = [
-  "https://admp.funchatparty.online", // ✅ your frontend domain
-  // Add more allowed origins if needed
+  "https://admp.funchatparty.online", // Add your frontend domain(s)
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "userId"],
-  credentials: true
-}));
+// ✅ CORS Middleware Fix
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "userId"],
+  })
+);
 
-// Middleware
+// --- Middleware ---
 app.use(compression());
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+
 app.use(
   session({
     secret: process.env.JWT_SECRET || "default_secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true, // ✅ set to true if using HTTPS
-      sameSite: 'None' // ✅ for cross-origin cookies
-    }
+      secure: true,         // ✅ true if using HTTPS
+      sameSite: "None",     // ✅ required for cross-origin cookies
+    },
   })
 );
 
-// Passport auth
+// --- Passport Setup ---
 require("./google-congif/passport.js");
 app.use(passport.initialize());
 app.use(passport.session());
 
-// DB connect
+// --- Database Connection ---
 const dbconnect = require("./db connect/dbconnect");
 dbconnect();
 
-// Routes
+// --- Caching Setup ---
+const cache = new NodeCache();
+
+// --- Routes ---
 app.use("/", require("./routers/Routes.js"));
 app.use("/auth", require("./auths/auth.js"));
 
-// Example cached API route
+// --- Example Cached Route ---
 app.get("/api/info/:id", async (req, res) => {
   const id = req.params.id;
   const key = `info_${id}`;
@@ -90,13 +84,15 @@ app.get("/api/info/:id", async (req, res) => {
   res.json({ from: "live", data });
 });
 
-// --- Admin Broadcast Message ---
+// --- Admin Broadcast Route ---
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
 
 app.post("/admin/broadcast", async (req, res) => {
   const { adminId, message } = req.body;
   if (!adminId || !message) {
-    return res.status(400).json({ error: "adminId and message are required." });
+    return res
+      .status(400)
+      .json({ error: "adminId and message are required." });
   }
 
   try {
@@ -108,12 +104,12 @@ app.post("/admin/broadcast", async (req, res) => {
   }
 });
 
-// Health Check
+// --- Health Check Route ---
 app.get("/", (req, res) => {
-  res.send(`✅ Server running`);
+  res.send("✅ Server running");
 });
 
-// Start server
+// --- Start Server ---
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
