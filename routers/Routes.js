@@ -61,7 +61,7 @@ const allRequest = require("../admin/GetAllResuestofBackground");
 const adminapplyBackgroundChange = require("../admin/ApproveRoomBAckGroundChange");
 const sendUserToUser = require("../withdraws/sendusertouser");
 // account routes
-router.post("/account/create/new",signup)
+router.post("/account/create/new", signup)
 router.post("/verify-otp", require("../account/verifyotp"));
 router.post("/login", login);
 router.post("/user/account/delete/a/time", deleteUser);
@@ -103,7 +103,7 @@ router.get("/get/all/a/vvpi/merchants", getAllMerchants);
 router.get("/get/merchant/user/o/bsvcr/user/find/:ui_id", getMerchantById);
 
 // admin coin add merchants 
-router.post("/admin/merchant/coin/add/fast",merchantCoinAdd);
+router.post("/admin/merchant/coin/add/fast", merchantCoinAdd);
 
 
 // withdrawal
@@ -211,10 +211,10 @@ router.get('/room/:roomId/chat', roomController.getMessages);
 
 // admin room controllers
 router.get("/admin/rooms", roomController.getAllRooms);
-router.get("/admin/room/:roomId", roomController.getRoomById);  
-router.post("/ban/room", roomController.banRoom );  
-router.post("/unban/room", roomController.unbanRoom );  
-router.post("/member/kickoff", roomController.kickOffMember);  
+router.get("/admin/room/:roomId", roomController.getRoomById);
+router.post("/ban/room", roomController.banRoom);
+router.post("/unban/room", roomController.unbanRoom);
+router.post("/member/kickoff", roomController.kickOffMember);
 router.put("/admin/room-chat-toggle/:roomId", roomController.adminChatBan);
 
 // auto Expiry of rooms
@@ -233,14 +233,14 @@ router.post("/admin/send/item", adminSendGift)
 
 
 // Agency 
-router.get("/api/v1/get/all/agency", getAllAgency )
-router.post("/api/v1/agency/create",CreateAgency);
-router.post("/api/v1/join/agency",joinAgency); 
+router.get("/api/v1/get/all/agency", getAllAgency)
+router.post("/api/v1/agency/create", CreateAgency);
+router.post("/api/v1/join/agency", joinAgency);
 router.post("/api/v1/agency/update", updateAgency);
 
 // Room Background Change
 router.post("/api/v2/background/change/apply", applyBackgroundChange)
-router.post("/api/v2/admin/change/status/background",adminapplyBackgroundChange);
+router.post("/api/v2/admin/change/status/background", adminapplyBackgroundChange);
 router.get("/api/v2/admi/get/all/background/change/apply", allRequest);
 
 

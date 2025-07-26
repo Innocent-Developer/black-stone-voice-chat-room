@@ -18,15 +18,15 @@ app.set('trust proxy', true); // ✅ Add this
 const cache = new NodeCache();
 
 // Rate Limiting (100 req/min/IP)
-const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 100,
-  message: "Too many requests, please try again later.",
-});
-// app.options("*", cors())
+// const limiter = rateLimit({
+//   windowMs: 60 * 1000,
+//   max: 100,
+//   message: "Too many requests, please try again later.",
+// });
+// // app.options("*", cors())
 
-// --- Middlewares ---
-app.use(limiter);
+// // --- Middlewares ---
+// app.use(limiter);
 app.use(compression());
 app.use(cors({
   origin: "*",

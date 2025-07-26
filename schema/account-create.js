@@ -53,6 +53,8 @@ const accountCreateSchema = new Schema(
 
     resetPasswordOtp: String,
     otpExpiration: Number,
+    level: { type: Number, default: 0 },
+    xp: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
