@@ -29,7 +29,7 @@ const cache = new NodeCache();
 // app.use(limiter);
 app.use(compression());
 app.use(cors({
-  origin: "*",
+  origin: "https://admp.funchatparty.online/",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization","userId"],
   credentials: true // only if you're using cookies/sessions
