@@ -1,7 +1,7 @@
 // ✅ Import firebase admin FIRST
 const admin = require("../fireBase/firebase");
 const AccountCreate = require("../schema/account-create");
-// ✅ Import gift records model
+// ✅ Import gift records creation function
 const CreateGiftRecords = require("../gifts/CreateGiftRecords");
 
 const sendGift = async (req, res) => {
@@ -29,13 +29,14 @@ const sendGift = async (req, res) => {
     // Save to DB
     await senderAccount.save();
     await receiverAccount.save();
-    // ✅ Create gift records
-    const giftRecord = await CreateGiftRecords.create({
+
+    // ✅ Create gift record using the helper function
+    const giftRecord = await CreateGiftRecords({
       giftCode: Math.floor(Math.random() * 1000000), // Random 6-digit code
       amount,
       senderId: senderAccount.ui_id,
       receiverId: receiverAccount.ui_id,
-    })
+    });
     console.log("🎁 Gift record created:", giftRecord);
 
     // ✅ Function to send FCM notification with error handling

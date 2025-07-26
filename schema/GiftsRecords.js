@@ -8,15 +8,8 @@ const Gifts = new Schema({
     amount: {
         type: Number,
     },
-    giftName: {
-        type: String
-    },
-    giftImage: {
-        type: String
-    },
-    giftFile: {
-        type: String
-    },
+   
+    
     senderId: {
         type: Number,
     },
