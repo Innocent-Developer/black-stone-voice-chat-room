@@ -12,14 +12,18 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.set("trust proxy", true); // For secure cookies behind proxies like NGINX
+// ✅ Allow cookies behind proxies (for secure cookies to work)
+app.set("trust proxy", true);
+
+// ✅ In-memory cache
+const cache = new NodeCache();
 
 // ✅ Allowed Frontend Origins
 const allowedOrigins = [
-  "https://admp.funchatparty.online", // Add your frontend domain(s)
+  "https://admp.funchatparty.online", // Your admin panel frontend domain
 ];
 
-// ✅ CORS Middleware Fix
+// ✅ CORS Middleware with credentials support
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -35,41 +39,50 @@ app.use(
   })
 );
 
-// --- Middleware ---
+// ✅ Debug log for CORS headers (optional, remove in production)
+app.use((req, res, next) => {
+  res.on("finish", () => {
+    console.log("CORS Headers:", {
+      "Access-Control-Allow-Origin": res.getHeader("Access-Control-Allow-Origin"),
+      "Access-Control-Allow-Credentials": res.getHeader("Access-Control-Allow-Credentials"),
+    });
+  });
+  next();
+});
+
+// ✅ Middleware
 app.use(compression());
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
+// ✅ Session for login/authorization if needed
 app.use(
   session({
     secret: process.env.JWT_SECRET || "default_secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true,         // ✅ true if using HTTPS
-      sameSite: "None",     // ✅ required for cross-origin cookies
+      secure: true,     // true if your site is served over HTTPS
+      sameSite: "None", // required for cross-site cookies
     },
   })
 );
 
-// --- Passport Setup ---
+// ✅ Passport Setup (Google Login or other auth)
 require("./google-congif/passport.js");
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- Database Connection ---
+// ✅ Database Connection
 const dbconnect = require("./db connect/dbconnect");
 dbconnect();
 
-// --- Caching Setup ---
-const cache = new NodeCache();
-
-// --- Routes ---
+// ✅ Your main routes
 app.use("/", require("./routers/Routes.js"));
 app.use("/auth", require("./auths/auth.js"));
 
-// --- Example Cached Route ---
+// ✅ Example: Cached Endpoint (test route)
 app.get("/api/info/:id", async (req, res) => {
   const id = req.params.id;
   const key = `info_${id}`;
@@ -84,32 +97,32 @@ app.get("/api/info/:id", async (req, res) => {
   res.json({ from: "live", data });
 });
 
-// --- Admin Broadcast Route ---
+// ✅ Admin Broadcast (official message) POST handler
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
 
-app.post("/admin/broadcast", async (req, res) => {
-  const { adminId, message } = req.body;
-  if (!adminId || !message) {
-    return res
-      .status(400)
-      .json({ error: "adminId and message are required." });
-  }
+// app.post("/chats/users/admin/send", async (req, res) => {
+//   const { title, content, image } = req.body;
+//   const userId = req.headers.userid;
 
-  try {
-    await sendAdminBroadcast(Number(adminId), message);
-    res.status(200).json({ status: "✅ Broadcast sent" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+//   if (!userId || !content) {
+//     return res.status(400).json({ error: "userId and content are required." });
+//   }
 
-// --- Health Check Route ---
+//   try {
+//     await sendAdminBroadcast(userId, { title, content, image });
+//     res.status(200).json({ message: "✅ Message sent successfully." });
+//   } catch (err) {
+//     console.error("Broadcast error:", err);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
+// ✅ Health Check
 app.get("/", (req, res) => {
   res.send("✅ Server running");
 });
 
-// --- Start Server ---
+// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
