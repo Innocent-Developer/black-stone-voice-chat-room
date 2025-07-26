@@ -12,28 +12,41 @@ const NodeCache = require("node-cache");
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
-app.set('trust proxy', true); // ✅ Add this
+
+app.set('trust proxy', true); // ✅ Trust reverse proxy (for secure cookies, etc.)
 
 // In-memory cache
 const cache = new NodeCache();
 
-// Rate Limiting (100 req/min/IP)
+// Rate Limiting (optional)
 // const limiter = rateLimit({
 //   windowMs: 60 * 1000,
 //   max: 100,
 //   message: "Too many requests, please try again later.",
 // });
-// // app.options("*", cors())
-
-// // --- Middlewares ---
 // app.use(limiter);
-app.use(compression());
+
+// ✅ Fix CORS with credentials
+const allowedOrigins = [
+  "https://admp.funchatparty.online", // ✅ your frontend domain
+  // Add more allowed origins if needed
+];
+
 app.use(cors({
-  origin: "https://admp.funchatparty.online/",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization","userId"],
-  credentials: true // only if you're using cookies/sessions
+  allowedHeaders: ["Content-Type", "Authorization", "userId"],
+  credentials: true
 }));
+
+// Middleware
+app.use(compression());
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -42,22 +55,27 @@ app.use(
     secret: process.env.JWT_SECRET || "default_secret",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      secure: true, // ✅ set to true if using HTTPS
+      sameSite: 'None' // ✅ for cross-origin cookies
+    }
   })
 );
 
+// Passport auth
 require("./google-congif/passport.js");
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- DB ---
+// DB connect
 const dbconnect = require("./db connect/dbconnect");
 dbconnect();
 
-// --- Routes ---
+// Routes
 app.use("/", require("./routers/Routes.js"));
 app.use("/auth", require("./auths/auth.js"));
 
-// --- Cached Endpoint Example ---
+// Example cached API route
 app.get("/api/info/:id", async (req, res) => {
   const id = req.params.id;
   const key = `info_${id}`;
@@ -72,7 +90,7 @@ app.get("/api/info/:id", async (req, res) => {
   res.json({ from: "live", data });
 });
 
-// --- Admin Broadcast ---
+// --- Admin Broadcast Message ---
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
 
 app.post("/admin/broadcast", async (req, res) => {
@@ -90,12 +108,12 @@ app.post("/admin/broadcast", async (req, res) => {
   }
 });
 
-// --- Health Check ---
+// Health Check
 app.get("/", (req, res) => {
-  res.send(`✅ Server running `);
+  res.send(`✅ Server running`);
 });
 
-// --- Start ---
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
