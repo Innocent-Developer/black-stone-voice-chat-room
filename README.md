@@ -135,16 +135,7 @@ Example:
 
 ### Send Gift
 
-```http
-POST /api/gift/send
-Content-Type: application/json
 
-{
-  "sender": "ui_id_123",
-  "receiver": "ui_id_456",
-  "amount": 500
-}
-```
 
 * Validates both users
 * Stores in `GiftRecords` schema
