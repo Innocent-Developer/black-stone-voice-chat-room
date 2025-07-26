@@ -19,5 +19,5 @@ const Gifts = new Schema({
 
 })
 
-const giftRecords = mongoose.model("gifts", Gifts);
+const giftRecords = mongoose.model("giftsRecords", Gifts);
 module.exports = giftRecords;
