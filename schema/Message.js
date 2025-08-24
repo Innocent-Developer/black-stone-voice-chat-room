@@ -8,7 +8,8 @@ const messageSchema = new mongoose.Schema({
   },
   receiverId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'AccountCreate'
+    ref: 'AccountCreate',
+    required: true
   },
   conversationId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -31,23 +32,12 @@ const messageSchema = new mongoose.Schema({
   isAdminBroadcast: {
     type: Boolean,
     default: false
-  },
-  read: {
-    type: Boolean,
-    default: false
-  },
-  readAt: {
-    type: Date
-  },
-  deletedFor: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }]
+  }
 }, {
   timestamps: true
 });
 
-// Indexes for faster querying
+// Simple indexes for better performance
 messageSchema.index({ senderId: 1 });
 messageSchema.index({ receiverId: 1 });
 messageSchema.index({ conversationId: 1 });

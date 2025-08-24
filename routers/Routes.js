@@ -60,6 +60,8 @@ const applyBackgroundChange = require("../RoomsApi/backGroundChange");
 const allRequest = require("../admin/GetAllResuestofBackground");
 const adminapplyBackgroundChange = require("../admin/ApproveRoomBAckGroundChange");
 const sendUserToUser = require("../withdraws/sendusertouser");
+const { deleteBanner } = require("../Banner/deleteBaner");
+const autoExpireBanners = require("../Banner/autoExpireBanners");
 // account routes
 router.post("/account/create/new", signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -128,10 +130,12 @@ router.post("/api/v2/admin/gift/create", require("../gifts/create-gift"));
 router.post("/admin/add/banner", addBanner);
 router.get("/client/get/banner", getBanner);
 router.get("/client/get/banner/i/d/full/n/:id", getBannerbyid);
+// delete baner
+router.delete("/admin/delete/baner/:id", deleteBanner)
 
-// setInterval(() => {
-//   autoExpireBanners();
-// }, 60 * 1000); // every 1 minute
+setInterval(() => {
+  autoExpireBanners();
+}, 60 * 1000); // every 1 minute
 
 // user post thing
 router.post("/client/post/create", createPost);
@@ -191,11 +195,8 @@ router.post("/client/follow", followUser);
 // store device token
 router.post("/client/store-device-token", storeDeviceToken);
 
-// chats by admin
+// Enhanced chat system - supports both user-to-user and admin broadcast messaging
 router.use("/chats", chatRouter);
-
-// user chat routes
-router.use("/chats/users", chatRouter);
 
 // rooms controllers
 

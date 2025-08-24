@@ -3,274 +3,312 @@ const router = express.Router();
 const Message = require("../schema/Message");
 const Conversation = require("../schema/Conversation");
 const User = require("../schema/account-create");
-const auth = require("../middleware/authMiddleware");
 
-// Utility function for error handling
-const handleError = (res, error, defaultMessage = "An error occurred") => {
+// Simple error handling
+const handleError = (res, error, message = "Error occurred") => {
   console.error(error);
-  res.status(500).json({ 
-    message: defaultMessage, 
-    error: error.message 
+  res.status(500).json({
+    success: false,
+    message: message,
+    error: error.message
   });
 };
 
 // ----------------------------------------
-// MESSAGE ENDPOINTS
+// SIMPLE USER CHAT ENDPOINTS
 // ----------------------------------------
 
-// Send a direct message
-router.post("/send", auth, async (req, res) => {
-  const { receiverId, content } = req.body;
+// Send a message
+router.post("/send", async (req, res) => {
+  const { senderId, receiverId, content, title, image } = req.body;
 
-  if (!receiverId || !content) {
-    return res.status(400).json({ 
-      message: "Receiver ID and content are required" 
+  if (!senderId || !receiverId || !content) {
+    return res.status(400).json({
+      success: false,
+      message: "senderId, receiverId and content are required"
     });
   }
 
   try {
-    // Check if receiver exists
+    // Check if users exist
+    const sender = await User.findById(senderId);
     const receiver = await User.findById(receiverId);
-    if (!receiver) {
-      return res.status(404).json({ message: "Receiver not found" });
+
+    if (!sender || !receiver) {
+      return res.status(404).json({
+        success: false,
+        message: "Sender or receiver not found"
+      });
     }
 
+    // Find or create conversation
+    let conversation = await Conversation.findOne({
+      members: { $all: [senderId, receiverId] },
+    });
+
+    if (!conversation) {
+      conversation = new Conversation({
+        members: [senderId, receiverId]
+      });
+      await conversation.save();
+    }
+
+    // Create message
     const message = new Message({
-      senderId: req.user.id,
+      senderId,
       receiverId,
+      conversationId: conversation._id,
       content,
+      title: title || null,
+      image: image || null,
+      isAdminBroadcast: false
     });
 
     await message.save();
-    res.status(201).json(message);
+
+    // Update conversation
+    conversation.lastMessage = message._id;
+    await conversation.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Message sent successfully",
+      data: message
+    });
   } catch (err) {
     handleError(res, err, "Failed to send message");
   }
 });
 
-// Get messages between authenticated user and another user
-router.get("/conversation/:receiverId", auth, async (req, res) => {
-  const { receiverId } = req.params;
+// Get messages between two users
+router.get("/conversation/:userId1/:userId2", async (req, res) => {
+  const { userId1, userId2 } = req.params;
+  const { page = 1, limit = 50 } = req.query;
 
   try {
+    const skip = (page - 1) * limit;
+
     const messages = await Message.find({
       $or: [
-        { senderId: req.user.id, receiverId },
-        { senderId: receiverId, receiverId: req.user.id },
+        { senderId: userId1, receiverId: userId2 },
+        { senderId: userId2, receiverId: userId1 },
       ],
-    }).sort({ timestamp: 1 });
+    })
+      .populate('senderId', 'name username profilePicture ui_id')
+      .populate('receiverId', 'name username profilePicture ui_id')
+      .sort({ createdAt: 1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    res.json(messages);
-  } catch (err) {
-    handleError(res, err, "Failed to fetch conversation");
-  }
-});
-
-// Get all messages where the user is sender or receiver
-router.get("/user/all-messages", auth, async (req, res) => {
-  try {
-    const messages = await Message.find({
-      $or: [
-        { senderId: req.user.id }, 
-        { receiverId: req.user.id }
-      ],
-    }).sort({ timestamp: -1 });
-
-    res.status(200).json(messages);
-  } catch (err) {
-    handleError(res, err, "Failed to fetch user's messages");
-  }
-});
-
-// Delete a single message (only if user is sender)
-router.delete("/messages/:messageId", auth, async (req, res) => {
-  try {
-    const message = await Message.findOne({
-      _id: req.params.messageId,
-      senderId: req.user.id
+    res.json({
+      success: true,
+      messages,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: messages.length
+      }
     });
-
-    if (!message) {
-      return res.status(404).json({ 
-        message: "Message not found or unauthorized" 
-      });
-    }
-
-    await message.remove();
-    res.status(200).json({ message: "Message deleted successfully" });
-  } catch (err) {
-    handleError(res, err, "Error deleting message");
-  }
-});
-
-// ----------------------------------------
-// CONVERSATION ENDPOINTS
-// ----------------------------------------
-
-// Create or get a conversation
-router.post("/conversations", auth, async (req, res) => {
-  const { receiverId } = req.body;
-
-  if (!receiverId) {
-    return res.status(400).json({ message: "Receiver ID is required" });
-  }
-
-  try {
-    // Check if receiver exists
-    const receiver = await User.findById(receiverId);
-    if (!receiver) {
-      return res.status(404).json({ message: "Receiver not found" });
-    }
-
-    // Check if conversation already exists
-    let conversation = await Conversation.findOne({
-      members: { $all: [req.user.id, receiverId] },
-    });
-
-    if (!conversation) {
-      conversation = new Conversation({ 
-        members: [req.user.id, receiverId] 
-      });
-      await conversation.save();
-    }
-
-    res.status(200).json(conversation);
-  } catch (err) {
-    handleError(res, err, "Failed to get/create conversation");
-  }
-});
-
-// Get messages in a conversation (only if user is participant)
-router.get("/messages/:conversationId", auth, async (req, res) => {
-  try {
-    const conversation = await Conversation.findOne({
-      _id: req.params.conversationId,
-      members: req.user.id
-    });
-
-    if (!conversation) {
-      return res.status(404).json({ 
-        message: "Conversation not found or unauthorized" 
-      });
-    }
-
-    const messages = await Message.find({
-      conversationId: req.params.conversationId,
-    }).sort({ timestamp: 1 });
-
-    res.status(200).json(messages);
   } catch (err) {
     handleError(res, err, "Failed to get messages");
   }
 });
 
-// Get full chat history between two users
-router.get("/history/:user2Id", auth, async (req, res) => {
-  const { user2Id } = req.params;
+// Get all conversations for a user
+router.get("/conversations/:userId", async (req, res) => {
+  const { userId } = req.params;
 
   try {
-    const conversation = await Conversation.findOne({
-      members: { $all: [req.user.id, user2Id] },
-    });
+    const conversations = await Conversation.find({
+      members: userId
+    })
+      .populate('members', 'name username profilePicture ui_id')
+      .populate('lastMessage')
+      .sort({ updatedAt: -1 });
 
-    if (!conversation) {
-      return res.status(404).json({ message: "No conversation found" });
-    }
-
-    const messages = await Message.find({
-      conversationId: conversation._id,
-    }).sort({ timestamp: 1 });
-
-    res.status(200).json({ 
-      conversationId: conversation._id, 
-      messages 
+    res.json({
+      success: true,
+      conversations
     });
   } catch (err) {
-    handleError(res, err, "Failed to fetch chat history");
+    handleError(res, err, "Failed to get conversations");
   }
 });
 
-// Delete an entire conversation and its messages
-router.delete("/conversations/:conversationId", auth, async (req, res) => {
+// Delete a message
+router.delete("/message/:messageId/:userId", async (req, res) => {
+  const { messageId, userId } = req.params;
+
   try {
-    const conversation = await Conversation.findOne({
-      _id: req.params.conversationId,
-      members: req.user.id
+    const message = await Message.findOne({
+      _id: messageId,
+      senderId: userId
     });
 
-    if (!conversation) {
-      return res.status(404).json({ 
-        message: "Conversation not found or unauthorized" 
+    if (!message) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found or not authorized"
       });
     }
 
-    await Message.deleteMany({ conversationId: req.params.conversationId });
-    await conversation.remove();
+    await Message.findByIdAndDelete(messageId);
 
-    res.status(200).json({ 
-      message: "Conversation and all messages deleted" 
+    res.json({
+      success: true,
+      message: "Message deleted successfully"
     });
   } catch (err) {
-    handleError(res, err, "Error deleting conversation");
+    handleError(res, err, "Failed to delete message");
   }
 });
 
 // ----------------------------------------
-// ADMIN ENDPOINTS
+// SIMPLE ADMIN BROADCAST ENDPOINTS
 // ----------------------------------------
 
-// Send a message from admin to all users
-router.post("/admin/send", auth, async (req, res) => {
-  // Check if user is admin
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ message: "Unauthorized" });
-  }
+// Send broadcast message
+router.post("/admin/broadcast", async (req, res) => {
+  const { adminId, title, content, image, targetUsers } = req.body;
 
-  const { title, content, image } = req.body;
-
-  if (!content) {
-    return res.status(400).json({ message: "Content is required" });
+  if (!adminId || !content) {
+    return res.status(400).json({
+      success: false,
+      message: "adminId and content are required"
+    });
   }
 
   try {
-    const users = await User.find({ _id: { $ne: req.user.id } });
+    // Find admin user
+    const admin = await User.findById(adminId);
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found"
+      });
+    }
 
-    const messages = await Promise.all(
-      users.map(async (user) => {
-        const message = new Message({
-          senderId: req.user.id,
-          receiverId: user._id,
-          title,
-          content,
-          image,
-          isAdminBroadcast: true
+    // Get target users
+    let users;
+    if (targetUsers && targetUsers.length > 0) {
+      users = await User.find({ _id: { $in: targetUsers } });
+    } else {
+      users = await User.find({
+        _id: { $ne: adminId },
+        role: { $ne: "admin" }
+      });
+    }
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No users found"
+      });
+    }
+
+    const sentMessages = [];
+
+    for (const user of users) {
+      // Find or create conversation
+      let conversation = await Conversation.findOne({
+        members: { $all: [adminId, user._id] },
+      });
+
+      if (!conversation) {
+        conversation = new Conversation({
+          members: [adminId, user._id]
         });
-        return await message.save();
-      })
-    );
+        await conversation.save();
+      }
 
-    res.status(201).json(messages);
+      // Create broadcast message
+      const message = new Message({
+        senderId: adminId,
+        receiverId: user._id,
+        conversationId: conversation._id,
+        title: title || null,
+        content,
+        image: image || null,
+        isAdminBroadcast: true
+      });
+
+      await message.save();
+
+      // Update conversation
+      conversation.lastMessage = message._id;
+      await conversation.save();
+
+      sentMessages.push(message);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Broadcast sent to ${sentMessages.length} users`,
+      sentTo: sentMessages.length,
+      totalUsers: users.length
+    });
   } catch (err) {
-    handleError(res, err, "Failed to send admin message");
+    handleError(res, err, "Failed to send broadcast");
   }
 });
 
-// Get all admin messages
-router.get("/admin/messages", auth, async (req, res) => {
-  // Check if user is admin
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ message: "Unauthorized" });
-  }
+// Get admin broadcasts
+router.get("/admin/broadcasts/:adminId", async (req, res) => {
+  const { adminId } = req.params;
+  const { page = 1, limit = 50 } = req.query;
 
   try {
-    const messages = await Message.find({ 
-      senderId: req.user.id,
-      isAdminBroadcast: true 
-    }).sort({ timestamp: -1 });
+    const skip = (page - 1) * limit;
 
-    res.status(200).json(messages);
+    const messages = await Message.find({
+      senderId: adminId,
+      isAdminBroadcast: true
+    })
+      .populate('receiverId', 'name username ui_id')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Message.countDocuments({
+      senderId: adminId,
+      isAdminBroadcast: true
+    });
+
+    res.json({
+      success: true,
+      messages,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (err) {
-    handleError(res, err, "Failed to fetch admin messages");
+    handleError(res, err, "Failed to get broadcasts");
+  }
+});
+
+// Get all users (for admin)
+router.get("/admin/users/:adminId", async (req, res) => {
+  const { adminId } = req.params;
+
+  try {
+    const users = await User.find(
+      {
+        _id: { $ne: adminId },
+        role: { $ne: "admin" }
+      },
+      'name username profilePicture ui_id email createdAt'
+    ).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      users,
+      total: users.length
+    });
+  } catch (err) {
+    handleError(res, err, "Failed to get users");
   }
 });
 
