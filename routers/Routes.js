@@ -195,11 +195,8 @@ router.post("/client/follow", followUser);
 // store device token
 router.post("/client/store-device-token", storeDeviceToken);
 
-// chats by admin
+// Enhanced chat system - supports both user-to-user and admin broadcast messaging
 router.use("/chats", chatRouter);
-
-// user chat routes
-router.use("/chats/users", chatRouter);
 
 // rooms controllers
 

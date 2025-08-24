@@ -1,0 +1,735 @@
+===============================================================================
+                    COMPLETE CHAT SYSTEM API ENDPOINTS GUIDE
+===============================================================================
+
+🔗 BASE URL: http://your-domain.com/api
+🔐 AUTHENTICATION: All endpoints require JWT token in Authorization header
+    Authorization: Bearer <your-jwt-token>
+
+===============================================================================
+                            USER-TO-USER CHAT ENDPOINTS
+===============================================================================
+
+1. SEND DIRECT MESSAGE
+   Method: POST
+   Endpoint: /chats/send
+   Headers: {
+     "Content-Type": "application/json",
+     "Authorization": "Bearer <jwt-token>"
+   }
+   JSON Body: {
+     "receiverId": "507f1f77bcf86cd799439011",
+     "content": "Hello! How are you today?",
+     "title": "Daily Greeting",
+     "image": "https://example.com/image.jpg"
+   }
+   Response Success (201): {
+     "message": "Message sent successfully",
+     "data": {
+       "_id": "507f1f77bcf86cd799439014",
+       "senderId": "507f1f77bcf86cd799439010",
+       "receiverId": "507f1f77bcf86cd799439011",
+       "conversationId": "507f1f77bcf86cd799439015",
+       "content": "Hello! How are you today?",
+       "title": "Daily Greeting",
+       "image": "https://example.com/image.jpg",
+       "createdAt": "2024-01-01T10:30:00.000Z",
+       "read": false,
+       "isAdminBroadcast": false
+     }
+   }
+   Hints:
+   - receiverId must be valid MongoDB ObjectId
+   - content is required (max 2000 characters)
+   - title and image are optional
+   - Automatically creates conversation if doesn't exist
+
+-------------------------------------------------------------------------------
+
+2. GET CONVERSATION WITH SPECIFIC USER
+   Method: GET
+   Endpoint: /chats/conversation/:receiverId?page=1&limit=50
+   Headers: {
+     "Authorization": "Bearer <jwt-token>"
+   }
+   URL Example: /chats/conversation/507f1f77bcf86cd799439011?page=1&limit=20
+   Response Success (200): {
+     "messages": [
+       {
+         "_id": "507f1f77bcf86cd799439014",
+         "senderId": {
+           "_id": "507f1f77bcf86cd799439010",
+           "name": "John Doe",
+           "username": "johndoe",
+           "profilePicture": "https://example.com/profile.jpg"
+         },
+         "receiverId": {
+           "_id": "507f1f77bcf86cd799439011",
+           "name": "Jane Smith",
+           "username": "janesmith",
+           "profilePicture": "https://example.com/jane.jpg"
+         },
+         "content": "Hello! How are you today?",
+         "createdAt": "2024-01-01T10:30:00.000Z",
+         "read": true,
+         "readAt": "2024-01-01T10:35:00.000Z"
+       }
+     ],
+     "pagination": {
+       "page": 1,
+       "limit": 20,
+       "total": 25
+     }
+   }
+   Hints:
+   - Automatically marks messages as read when fetched
+   - Messages sorted by creation time (oldest first)
+   - Supports pagination for performance
+
+-------------------------------------------------------------------------------
+
+3. GET ALL CONVERSATIONS
+   Method: GET
+   Endpoint: /chats/conversations
+   Headers: {
+     "Authorization": "Bearer <jwt-token>"
+   }
+   Response Success (200): [
+     {
+       "_id": "507f1f77bcf86cd799439015",
+       "members": [
+         {
+           "_id": "507f1f77bcf86cd799439010",
+           "name": "John Doe",
+           "username": "johndoe",
+           "profilePicture": "https://example.com/john.jpg",
+           "ui_id": 1001
+         },
+         {
+           "_id": "507f1f77bcf86cd799439011",
+           "name": "Jane Smith",
+           "username": "janesmith", 
+           "profilePicture": "https://example.com/jane.jpg",
+           "ui_id": 1002
+         }
+       ],
+       "lastMessage": {
+         "_id": "507f1f77bcf86cd799439014",
+         "content": "Hello! How are you today?",
+         "createdAt": "2024-01-01T10:30:00.000Z"
+       },
+       "unreadCount": 3,
+       "updatedAt": "2024-01-01T10:30:00.000Z"
+     }
+   ]
+   Hints:
+   - Returns conversations sorted by last activity
+   - Includes unread message count for each conversation
+   - Only shows conversations not deleted by user
+
+-------------------------------------------------------------------------------
+
+4. CREATE OR GET CONVERSATION
+   Method: POST
+   Endpoint: /chats/conversations
+   Headers: {
+     "Content-Type": "application/json",
+     "Authorization": "Bearer <jwt-token>"
+   }
+   JSON Body: {
+     "receiverId": "507f1f77bcf86cd799439011"
+   }
+   Response Success (200): {
+     "_id": "507f1f77bcf86cd799439015",
+     "members": [
+       {
+         "_id": "507f1f77bcf86cd799439010",
+         "name": "John Doe",
+         "username": "johndoe",
+         "profilePicture": "https://example.com/john.jpg",
+         "ui_id": 1001
+       },
+       {
+         "_id": "507f1f77bcf86cd799439011",
+         "name": "Jane Smith",
+         "username": "janesmith",
+         "profilePicture": "https://example.com/jane.jpg",
+         "ui_id": 1002
+       }
+     ],
+     "createdAt": "2024-01-01T10:00:00.000Z",
+     "updatedAt": "2024-01-01T10:30:00.000Z"
+   }
+   Hints:
+   - Creates new conversation if doesn't exist
+   - Returns existing conversation if already exists
+   - receiverId must be valid user ObjectId
+
+-------------------------------------------------------------------------------
+
+5. MARK MESSAGE AS READ
+   Method: PATCH
+   Endpoint: /chats/messages/:messageId/read
+   Headers: {
+     "Authorization": "Bearer <jwt-token>"
+   }
+   URL Example: /chats/messages/507f1f77bcf86cd799439014/read
+   Response Success (200): {
+     "message": "Message marked as read",
+     "data": {
+       "_id": "507f1f77bcf86cd799439014",
+       "read": true,
+       "readAt": "2024-01-01T10:35:00.000Z"
+     }
+   }
+   Hints:
+   - Only receiver can mark message as read
+   - Message must not be already read
+   - Sets readAt timestamp automatically
+
+-------------------------------------------------------------------------------
+
+6. DELETE MESSAGE (SOFT DELETE)
+   Method: DELETE
+   Endpoint: /chats/messages/:messageId
+   Headers: {
+     "Authorization": "Bearer <jwt-token>"
+   }
+   URL Example: /chats/messages/507f1f77bcf86cd799439014
+   Response Success (200): {
+     "message": "Message deleted successfully"
+   }
+   Hints:
+   - Only sender can delete their own messages
+   - Soft delete - message hidden for sender only
+   - Message still visible to receiver
+
+-------------------------------------------------------------------------------
+
+7. GET MESSAGES IN CONVERSATION
+   Method: GET
+   Endpoint: /chats/messages/:conversationId?page=1&limit=50
+   Headers: {
+     "Authorization": "Bearer <jwt-token>"
+   }
+   URL Example: /chats/messages/507f1f77bcf86cd799439015?page=1&limit=30
+   Response Success (200): {
+     "messages": [
+       {
+         "_id": "507f1f77bcf86cd799439014",
+         "senderId": {
+           "_id": "507f1f77bcf86cd799439010",
+           "name": "John Doe",
+           "username": "johndoe",
+           "profilePicture": "https://example.com/john.jpg"
+         },
+         "content": "Hello!",
+         "createdAt": "2024-01-01T10:30:00.000Z",
+         "read": true
+       }
+     ],
+     "pagination": {
+       "page": 1,
+       "limit": 30,
+       "total": 45,
+       "pages": 2
+     }
+   }
+   Hints:
+   - User must be member of conversation
+   - Messages sorted chronologically
+   - Excludes soft-deleted messages
+
+-------------------------------------------------------------------------------
+
+8. GET CHAT HISTORY WITH USER
+   Method: GET
+   Endpoint: /chats/history/:user2Id?page=1&limit=50
+   Headers: {
+     "Authorization": "Bearer <jwt-token>"
+   }
+   URL Example: /chats/history/507f1f77bcf86cd799439011?page=1&limit=25
+   Response Success (200): {
+     "conversationId": "507f1f77bcf86cd799439015",
+     "messages": [
+       {
+         "_id": "507f1f77bcf86cd799439014",
+         "senderId": {
+           "_id": "507f1f77bcf86cd799439010",
+           "name": "John Doe",
+           "username": "johndoe",
+           "profilePicture": "https://example.com/john.jpg"
+         },
+         "content": "Hello!",
+         "createdAt": "2024-01-01T10:30:00.000Z"
+       }
+     ],
+     "pagination": {
+       "page": 1,
+       "limit": 25,
+       "total": 50,
+       "pages": 2
+     }
+   }
+   Hints:
+   - Returns full chat history between two users
+   - Must have existing conversation
+   - Includes pagination metadata
+
+-------------------------------------------------------------------------------
+
+9. DELETE CONVERSATION (SOFT DELETE)
+   Method: DELETE
+   Endpoint: /chats/conversations/:conversationId
+   Headers: {
+     "Authorization": "Bearer <jwt-token>"
+   }
+   URL Example: /chats/conversations/507f1f77bcf86cd799439015
+   Response Success (200): {
+     "message": "Conversation deleted successfully"
+   }
+   Hints:
+   - Soft deletes conversation for current user only
+   - All messages in conversation hidden for user
+   - Other user can still see conversation
+
+-------------------------------------------------------------------------------
+
+10. GET ALL USER MESSAGES
+    Method: GET
+    Endpoint: /chats/user/all-messages?page=1&limit=50
+    Headers: {
+      "Authorization": "Bearer <jwt-token>"
+    }
+    URL Example: /chats/user/all-messages?page=1&limit=20
+    Response Success (200): {
+      "messages": [
+        {
+          "_id": "507f1f77bcf86cd799439014",
+          "senderId": {
+            "_id": "507f1f77bcf86cd799439010",
+            "name": "John Doe",
+            "username": "johndoe",
+            "profilePicture": "https://example.com/john.jpg"
+          },
+          "receiverId": {
+            "_id": "507f1f77bcf86cd799439011",
+            "name": "Jane Smith",
+            "username": "janesmith",
+            "profilePicture": "https://example.com/jane.jpg"
+          },
+          "content": "Hello!",
+          "createdAt": "2024-01-01T10:30:00.000Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 100,
+        "pages": 5
+      }
+    }
+    Hints:
+    - Returns all messages where user is sender or receiver
+    - Messages sorted by newest first
+    - Excludes soft-deleted messages
+
+===============================================================================
+                            ADMIN BROADCAST ENDPOINTS
+===============================================================================
+
+11. SEND BROADCAST MESSAGE TO ALL USERS
+    Method: POST
+    Endpoint: /chats/admin/broadcast
+    Headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <admin-jwt-token>"
+    }
+    JSON Body: {
+      "title": "System Maintenance Notice",
+      "content": "The system will be under maintenance from 2-4 PM today. Please save your work and log out safely.",
+      "image": "https://example.com/maintenance-notice.jpg"
+    }
+    Response Success (201): {
+      "message": "Broadcast sent to 150 users successfully",
+      "sentTo": 150,
+      "messages": [
+        {
+          "_id": "507f1f77bcf86cd799439020",
+          "senderId": "507f1f77bcf86cd799439001",
+          "receiverId": "507f1f77bcf86cd799439011",
+          "content": "The system will be under maintenance...",
+          "title": "System Maintenance Notice",
+          "isAdminBroadcast": true,
+          "createdAt": "2024-01-01T11:00:00.000Z"
+        }
+      ]
+    }
+    Hints:
+    - Requires admin role in JWT token
+    - Sends to all non-admin users
+    - Creates individual conversations with each user
+    - title and image are optional
+
+-------------------------------------------------------------------------------
+
+12. SEND TARGETED BROADCAST TO SPECIFIC USERS
+    Method: POST
+    Endpoint: /chats/admin/broadcast
+    Headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <admin-jwt-token>"
+    }
+    JSON Body: {
+      "title": "VIP Member Announcement",
+      "content": "Special offer for VIP members only! Get 50% off on premium features.",
+      "image": "https://example.com/vip-offer.jpg",
+      "targetUsers": [
+        "507f1f77bcf86cd799439011",
+        "507f1f77bcf86cd799439012",
+        "507f1f77bcf86cd799439013"
+      ]
+    }
+    Response Success (201): {
+      "message": "Broadcast sent to 3 users successfully",
+      "sentTo": 3,
+      "messages": [
+        {
+          "_id": "507f1f77bcf86cd799439021",
+          "senderId": "507f1f77bcf86cd799439001",
+          "receiverId": "507f1f77bcf86cd799439011",
+          "content": "Special offer for VIP members only!...",
+          "title": "VIP Member Announcement",
+          "isAdminBroadcast": true,
+          "createdAt": "2024-01-01T11:15:00.000Z"
+        }
+      ]
+    }
+    Hints:
+    - targetUsers array contains user ObjectIds
+    - Only sends to specified users
+    - Validates all user IDs before sending
+
+-------------------------------------------------------------------------------
+
+13. GET ADMIN BROADCAST HISTORY
+    Method: GET
+    Endpoint: /chats/admin/broadcasts?page=1&limit=50
+    Headers: {
+      "Authorization": "Bearer <admin-jwt-token>"
+    }
+    URL Example: /chats/admin/broadcasts?page=1&limit=10
+    Response Success (200): {
+      "messages": [
+        {
+          "_id": "507f1f77bcf86cd799439020",
+          "senderId": "507f1f77bcf86cd799439001",
+          "receiverId": {
+            "_id": "507f1f77bcf86cd799439011",
+            "name": "Jane Smith",
+            "username": "janesmith",
+            "profilePicture": "https://example.com/jane.jpg",
+            "ui_id": 1002
+          },
+          "content": "The system will be under maintenance...",
+          "title": "System Maintenance Notice",
+          "isAdminBroadcast": true,
+          "createdAt": "2024-01-01T11:00:00.000Z"
+        }
+      ],
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 300,
+        "pages": 30
+      }
+    }
+    Hints:
+    - Shows all broadcasts sent by current admin
+    - Sorted by newest first
+    - Includes receiver information
+
+-------------------------------------------------------------------------------
+
+14. GET USERS LIST FOR TARGETING
+    Method: GET
+    Endpoint: /chats/admin/users
+    Headers: {
+      "Authorization": "Bearer <admin-jwt-token>"
+    }
+    Response Success (200): {
+      "users": [
+        {
+          "_id": "507f1f77bcf86cd799439011",
+          "name": "Jane Smith",
+          "username": "janesmith",
+          "profilePicture": "https://example.com/jane.jpg",
+          "ui_id": 1002,
+          "email": "jane@example.com",
+          "createdAt": "2024-01-01T09:00:00.000Z"
+        },
+        {
+          "_id": "507f1f77bcf86cd799439012",
+          "name": "Bob Johnson",
+          "username": "bobjohnson",
+          "profilePicture": "https://example.com/bob.jpg",
+          "ui_id": 1003,
+          "email": "bob@example.com",
+          "createdAt": "2024-01-01T08:00:00.000Z"
+        }
+      ],
+      "total": 150
+    }
+    Hints:
+    - Returns all non-admin users
+    - Sorted by newest registration first
+    - Use _id values for targetUsers array
+
+-------------------------------------------------------------------------------
+
+15. GET ADMIN BROADCAST STATISTICS
+    Method: GET
+    Endpoint: /chats/admin/stats
+    Headers: {
+      "Authorization": "Bearer <admin-jwt-token>"
+    }
+    Response Success (200): {
+      "totalBroadcasts": 25,
+      "totalUsers": 150,
+      "unreadBroadcasts": 75,
+      "recentBroadcasts": 5,
+      "readRate": "50.00"
+    }
+    Hints:
+    - totalBroadcasts: Total messages sent by admin
+    - unreadBroadcasts: Messages not yet read
+    - recentBroadcasts: Messages sent in last 24 hours
+    - readRate: Percentage of messages read
+
+===============================================================================
+                              ROOM CHAT ENDPOINTS
+===============================================================================
+
+16. SEND MESSAGE IN ROOM
+    Method: POST
+    Endpoint: /room/:roomId/chat
+    Headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer <jwt-token>"
+    }
+    URL Example: /room/ROOM123/chat
+    JSON Body: {
+      "ui_id": "1001",
+      "message": "Hello everyone in this room! How is everyone doing today?"
+    }
+    Response Success (200): {
+      "message": "Message sent"
+    }
+    Hints:
+    - User must be member of the room
+    - Room must exist and not be banned
+    - Chat must be enabled in room settings
+    - ui_id is the user's custom ID
+
+-------------------------------------------------------------------------------
+
+17. GET ROOM MESSAGES
+    Method: GET
+    Endpoint: /room/:roomId/chat
+    Headers: {
+      "Authorization": "Bearer <jwt-token>"
+    }
+    URL Example: /room/ROOM123/chat
+    Response Success (200): {
+      "chat": [
+        {
+          "sender": "1001",
+          "message": "Hello everyone in this room!",
+          "timestamp": "2024-01-01T12:00:00.000Z",
+          "_id": "507f1f77bcf86cd799439025"
+        },
+        {
+          "sender": "1002",
+          "message": "Hi there! Welcome to the room!",
+          "timestamp": "2024-01-01T12:01:00.000Z",
+          "_id": "507f1f77bcf86cd799439026"
+        }
+      ]
+    }
+    Hints:
+    - Returns all messages in room chat
+    - Messages sorted chronologically
+    - sender field contains ui_id
+
+===============================================================================
+                              ERROR RESPONSES
+===============================================================================
+
+400 Bad Request: {
+  "message": "Receiver ID and content are required",
+  "error": "Missing required fields"
+}
+
+401 Unauthorized: {
+  "message": "Access denied",
+  "error": "Invalid or expired token"
+}
+
+403 Forbidden: {
+  "message": "Unauthorized: Admin access required",
+  "error": "Insufficient permissions"
+}
+
+404 Not Found: {
+  "message": "Receiver not found",
+  "error": "User with the specified ID does not exist"
+}
+
+500 Internal Server Error: {
+  "message": "Failed to send message",
+  "error": "Database connection error"
+}
+
+===============================================================================
+                              IMPLEMENTATION HINTS
+===============================================================================
+
+🔐 AUTHENTICATION SETUP:
+- Include JWT token in all requests
+- Token format: "Bearer <actual-jwt-token>"
+- Admin endpoints require "role": "admin" in token payload
+
+📱 FRONTEND INTEGRATION:
+JavaScript Example:
+```javascript
+// Send message
+async function sendMessage(receiverId, content, title, image) {
+  const response = await fetch('/chats/send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    },
+    body: JSON.stringify({
+      receiverId,
+      content,
+      title,
+      image
+    })
+  });
+  return await response.json();
+}
+
+// Get conversations
+async function getConversations() {
+  const response = await fetch('/chats/conversations', {
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    }
+  });
+  return await response.json();
+}
+
+// Admin broadcast
+async function sendBroadcast(title, content, targetUsers = null) {
+  const response = await fetch('/chats/admin/broadcast', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('adminToken')
+    },
+    body: JSON.stringify({
+      title,
+      content,
+      targetUsers
+    })
+  });
+  return await response.json();
+}
+```
+
+🔌 SOCKET.IO INTEGRATION:
+```javascript
+// Client-side Socket.IO setup
+socket.on('receive_message', (message) => {
+  console.log('New message received:', message);
+  // Update chat UI
+});
+
+socket.on('admin_broadcast', (broadcast) => {
+  console.log('Admin broadcast:', broadcast);
+  // Show notification
+});
+```
+
+📊 PAGINATION HANDLING:
+- All list endpoints support page and limit parameters
+- Default: page=1, limit=50
+- Use pagination.pages to determine total pages
+- Implement infinite scroll or page navigation
+
+💾 DATA VALIDATION:
+- receiverId: Must be valid MongoDB ObjectId (24 hex characters)
+- content: Required, max 2000 characters
+- title: Optional, max 100 characters
+- image: Optional, must be valid URL
+- targetUsers: Array of valid ObjectIds
+
+🔄 REAL-TIME UPDATES:
+- Implement Socket.IO for live messaging
+- Update UI when messages are read
+- Show typing indicators
+- Handle connection status
+
+📱 MOBILE CONSIDERATIONS:
+- Use proper viewport settings
+- Implement touch-friendly UI
+- Handle offline scenarios
+- Optimize for smaller screens
+
+🎨 UI/UX RECOMMENDATIONS:
+- Show message status (sent, delivered, read)
+- Display unread message counts
+- Implement message search
+- Add emoji support
+- Show user online status
+
+===============================================================================
+                              TESTING CHECKLIST
+===============================================================================
+
+✅ User Chat Testing:
+□ Send message between users
+□ Get conversation list
+□ Mark messages as read
+□ Delete messages
+□ Test pagination
+□ Verify soft delete behavior
+
+✅ Admin Broadcast Testing:
+□ Send broadcast to all users
+□ Send targeted broadcast
+□ View broadcast history
+□ Check admin statistics
+□ Verify admin permissions
+
+✅ Room Chat Testing:
+□ Send room messages
+□ Get room message history
+□ Verify room membership
+□ Test room permissions
+
+✅ Error Handling Testing:
+□ Invalid tokens
+□ Missing required fields
+□ Non-existent users
+□ Permission errors
+□ Network failures
+
+===============================================================================
+                                END OF GUIDE
+===============================================================================
+
+🎯 This guide contains all endpoints, JSON examples, and implementation hints
+📚 Refer to CHAT_API_DOCUMENTATION.md for additional details
+🚀 Happy coding! 
