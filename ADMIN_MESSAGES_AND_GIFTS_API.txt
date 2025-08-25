@@ -1,0 +1,493 @@
+===============================================================================
+                     ADMIN MESSAGES & GIFTS API GUIDE
+===============================================================================
+
+🔗 BASE URL: http://www.blackstonevoicechatroom.online
+📝 Simple APIs for Admin Messages and Gift Management
+
+===============================================================================
+                         ADMIN MESSAGES APIs
+===============================================================================
+
+1. SEND ADMIN BROADCAST MESSAGE
+   Method: POST
+   URL: /chats/admin/broadcast
+   
+   JSON Body (Send to All Users):
+   {
+     "adminId": "507f1f77bcf86cd799439001",
+     "title": "System Update",
+     "content": "We are updating the system. Please stay tuned!",
+     "image": "https://example.com/update-image.jpg"
+   }
+   
+   JSON Body (Send to Specific Users):
+   {
+     "adminId": "507f1f77bcf86cd799439001",
+     "title": "VIP Notice",
+     "content": "Special announcement for VIP members only!",
+     "targetUsers": [
+       "507f1f77bcf86cd799439010",
+       "507f1f77bcf86cd799439011",
+       "507f1f77bcf86cd799439012"
+     ]
+   }
+   
+   Response:
+   {
+     "success": true,
+     "message": "Broadcast sent to 150 users",
+     "sentTo": 150,
+     "totalUsers": 150
+   }
+   
+   Notes:
+   - adminId and content are required
+   - title and image are optional
+   - targetUsers is optional (if empty, sends to all users)
+
+-------------------------------------------------------------------------------
+
+2. GET ALL ADMIN MESSAGES (SENT BY ADMIN)
+   Method: GET
+   URL: /chats/admin/broadcasts/:adminId?page=1&limit=50
+   
+   Example: /chats/admin/broadcasts/507f1f77bcf86cd799439001?page=1&limit=20
+   
+   Response:
+   {
+     "success": true,
+     "messages": [
+       {
+         "_id": "507f1f77bcf86cd799439040",
+         "senderId": "507f1f77bcf86cd799439001",
+         "receiverId": {
+           "_id": "507f1f77bcf86cd799439010",
+           "name": "John Doe",
+           "username": "johndoe",
+           "ui_id": 1001
+         },
+         "title": "System Update",
+         "content": "We are updating the system. Please stay tuned!",
+         "image": "https://example.com/update-image.jpg",
+         "isAdminBroadcast": true,
+         "createdAt": "2024-01-01T11:00:00.000Z"
+       },
+       {
+         "_id": "507f1f77bcf86cd799439041",
+         "senderId": "507f1f77bcf86cd799439001",
+         "receiverId": {
+           "_id": "507f1f77bcf86cd799439011",
+           "name": "Jane Smith",
+           "username": "janesmith",
+           "ui_id": 1002
+         },
+         "title": "VIP Notice",
+         "content": "Special announcement for VIP members only!",
+         "isAdminBroadcast": true,
+         "createdAt": "2024-01-01T10:30:00.000Z"
+       }
+     ],
+     "pagination": {
+       "page": 1,
+       "limit": 20,
+       "total": 45,
+       "pages": 3
+     }
+   }
+   
+   Notes:
+   - Replace :adminId with actual admin user ID
+   - Shows ALL messages sent by the admin to users
+   - Includes receiver information for each message
+   - Supports pagination (page and limit parameters)
+   - Messages sorted by newest first
+
+-------------------------------------------------------------------------------
+
+3. GET ALL ADMIN MESSAGES (RECEIVED BY USERS) 
+   Method: GET
+   URL: /chats/conversation/:adminId/:userId?page=1&limit=50
+   
+   Example: /chats/conversation/507f1f77bcf86cd799439001/507f1f77bcf86cd799439010
+   
+   Response:
+   {
+     "success": true,
+     "messages": [
+       {
+         "_id": "507f1f77bcf86cd799439040",
+         "senderId": {
+           "_id": "507f1f77bcf86cd799439001",
+           "name": "Admin",
+           "username": "admin",
+           "ui_id": 5001
+         },
+         "receiverId": {
+           "_id": "507f1f77bcf86cd799439010",
+           "name": "John Doe",
+           "username": "johndoe",
+           "ui_id": 1001
+         },
+         "title": "System Update",
+         "content": "We are updating the system. Please stay tuned!",
+         "isAdminBroadcast": true,
+         "createdAt": "2024-01-01T11:00:00.000Z"
+       }
+     ],
+     "pagination": {
+       "page": 1,
+       "limit": 50,
+       "total": 5
+     }
+   }
+   
+   Notes:
+   - Shows conversation between admin and specific user
+   - Replace :adminId with admin user ID
+   - Replace :userId with specific user ID
+   - Shows messages received by that user from admin
+
+-------------------------------------------------------------------------------
+
+4. GET ALL USERS WHO RECEIVED ADMIN MESSAGES
+   Method: GET
+   URL: /chats/admin/users/:adminId
+   
+   Example: /chats/admin/users/507f1f77bcf86cd799439001
+   
+   Response:
+   {
+     "success": true,
+     "users": [
+       {
+         "_id": "507f1f77bcf86cd799439010",
+         "name": "John Doe",
+         "username": "johndoe",
+         "profilePicture": "https://example.com/john.jpg",
+         "ui_id": 1001,
+         "email": "john@example.com",
+         "createdAt": "2024-01-01T09:00:00.000Z"
+       },
+       {
+         "_id": "507f1f77bcf86cd799439011",
+         "name": "Jane Smith",
+         "username": "janesmith",
+         "profilePicture": "https://example.com/jane.jpg",
+         "ui_id": 1002,
+         "email": "jane@example.com",
+         "createdAt": "2024-01-01T08:00:00.000Z"
+       }
+     ],
+     "total": 150
+   }
+   
+   Notes:
+   - Shows all users who can receive admin messages
+   - Excludes other admin users
+   - Use user IDs for targeted broadcasts
+
+===============================================================================
+                              GIFTS APIs
+===============================================================================
+
+5. CREATE GIFT (ADMIN)
+   Method: POST
+   URL: /api/v2/admin/gift/create
+   
+   JSON Body:
+   {
+     "amount": 100,
+     "giftName": "Golden Crown",
+     "giftImage": "https://example.com/crown.jpg",
+     "giftFile": "https://example.com/crown.gif",
+     "giftCategory": "premium"
+   }
+   
+   Response:
+   {
+     "success": true,
+     "message": "Gift created successfully",
+     "gift": {
+       "_id": "507f1f77bcf86cd799439050",
+       "giftCode": 1234567,
+       "amount": 100,
+       "giftName": "Golden Crown",
+       "giftImage": "https://example.com/crown.jpg",
+       "giftFile": "https://example.com/crown.gif",
+       "giftCategory": "premium",
+       "createdAt": "2024-01-01T12:00:00.000Z"
+     }
+   }
+   
+   Notes:
+   - Only amount is required
+   - giftCode is auto-generated (7-digit unique number)
+   - Other fields are optional
+
+-------------------------------------------------------------------------------
+
+6. GET ALL GIFTS
+   Method: GET
+   URL: /api/v2/client/gift/get/all
+   
+   Response:
+   {
+     "success": true,
+     "message": "Gifts retrieved successfully",
+     "gifts": [
+       {
+         "_id": "507f1f77bcf86cd799439050",
+         "giftCode": 1234567,
+         "amount": 100,
+         "giftName": "Golden Crown",
+         "giftImage": "https://example.com/crown.jpg",
+         "giftFile": "https://example.com/crown.gif",
+         "giftCategory": "premium",
+         "createdAt": "2024-01-01T12:00:00.000Z"
+       },
+       {
+         "_id": "507f1f77bcf86cd799439051",
+         "giftCode": 2345678,
+         "amount": 50,
+         "giftName": "Silver Star",
+         "giftImage": "https://example.com/star.jpg",
+         "giftFile": "https://example.com/star.gif",
+         "giftCategory": "normal",
+         "createdAt": "2024-01-01T11:30:00.000Z"
+       }
+     ]
+   }
+   
+   Notes:
+   - Returns all available gifts
+   - Sorted by newest first
+   - No parameters required
+
+-------------------------------------------------------------------------------
+
+7. DELETE GIFT (ADMIN)
+   Method: DELETE
+   URL: /api/v2/admin/gift/delete/:giftId
+   
+   Example: /api/v2/admin/gift/delete/507f1f77bcf86cd799439050
+   
+   Response:
+   {
+     "success": true,
+     "message": "Gift deleted successfully",
+     "deletedGift": {
+       "_id": "507f1f77bcf86cd799439050",
+       "giftName": "Golden Crown",
+       "amount": 100,
+       "giftCode": 1234567
+     }
+   }
+   
+   Error Response (Gift Not Found):
+   {
+     "success": false,
+     "message": "Gift not found"
+   }
+   
+   Notes:
+   - Replace :giftId with actual gift ID
+   - Permanently deletes the gift
+   - Returns deleted gift information
+
+-------------------------------------------------------------------------------
+
+8. SEND GIFT (USER TO USER)
+   Method: POST
+   URL: /api/v2/client/gift/send
+   
+   JSON Body:
+   {
+     "sender": 1001,
+     "receiver": 1002,
+     "amount": 50
+   }
+   
+   Response:
+   {
+     "success": true,
+     "message": "Gift sent successfully",
+     "transaction": {
+       "sender": 1001,
+       "receiver": 1002,
+       "amount": 50,
+       "senderBalanceAfter": 950,
+       "receiverBalanceAfter": 1050
+     }
+   }
+   
+   Notes:
+   - sender and receiver use ui_id (not MongoDB ObjectId)
+   - Deducts gold from sender, adds diamond to receiver
+   - Creates gift record in database
+
+===============================================================================
+                              ERROR RESPONSES
+===============================================================================
+
+400 Bad Request:
+{
+  "success": false,
+  "message": "adminId and content are required"
+}
+
+404 Not Found:
+{
+  "success": false,
+  "message": "Admin not found"
+}
+
+404 Gift Not Found:
+{
+  "success": false,
+  "message": "Gift not found"
+}
+
+500 Server Error:
+{
+  "success": false,
+  "message": "Internal server error",
+  "error": "Database connection failed"
+}
+
+===============================================================================
+                        JAVASCRIPT EXAMPLES
+===============================================================================
+
+// Get all admin messages sent
+async function getAdminMessages(adminId, page = 1, limit = 50) {
+  const response = await fetch(`/chats/admin/broadcasts/${adminId}?page=${page}&limit=${limit}`);
+  const result = await response.json();
+  console.log('Admin Messages:', result);
+  return result;
+}
+
+// Send admin broadcast to all users
+async function sendAdminBroadcast(adminId, title, content, image) {
+  const response = await fetch('/chats/admin/broadcast', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      adminId: adminId,
+      title: title,
+      content: content,
+      image: image
+    })
+  });
+  
+  const result = await response.json();
+  console.log('Broadcast Result:', result);
+  return result;
+}
+
+// Send admin broadcast to specific users
+async function sendTargetedBroadcast(adminId, title, content, targetUsers) {
+  const response = await fetch('/chats/admin/broadcast', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      adminId: adminId,
+      title: title,
+      content: content,
+      targetUsers: targetUsers
+    })
+  });
+  
+  const result = await response.json();
+  console.log('Targeted Broadcast Result:', result);
+  return result;
+}
+
+// Get messages between admin and specific user
+async function getAdminUserConversation(adminId, userId) {
+  const response = await fetch(`/chats/conversation/${adminId}/${userId}`);
+  const result = await response.json();
+  console.log('Admin-User Conversation:', result);
+  return result;
+}
+
+// Delete a gift
+async function deleteGift(giftId) {
+  const response = await fetch(`/api/v2/admin/gift/delete/${giftId}`, {
+    method: 'DELETE'
+  });
+  
+  const result = await response.json();
+  console.log('Delete Gift Result:', result);
+  return result;
+}
+
+// Get all gifts
+async function getAllGifts() {
+  const response = await fetch('/api/v2/client/gift/get/all');
+  const result = await response.json();
+  console.log('All Gifts:', result);
+  return result;
+}
+
+// Create new gift
+async function createGift(amount, giftName, giftImage, giftFile, giftCategory) {
+  const response = await fetch('/api/v2/admin/gift/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      amount: amount,
+      giftName: giftName,
+      giftImage: giftImage,
+      giftFile: giftFile,
+      giftCategory: giftCategory
+    })
+  });
+  
+  const result = await response.json();
+  console.log('Create Gift Result:', result);
+  return result;
+}
+
+===============================================================================
+                              QUICK REFERENCE
+===============================================================================
+
+ADMIN MESSAGES:
+POST   /chats/admin/broadcast                    - Send broadcast message
+GET    /chats/admin/broadcasts/:adminId          - Get all admin messages sent
+GET    /chats/conversation/:adminId/:userId      - Get admin-user conversation
+GET    /chats/admin/users/:adminId               - Get all users list
+
+GIFTS MANAGEMENT:
+POST   /api/v2/admin/gift/create                 - Create new gift
+GET    /api/v2/client/gift/get/all               - Get all gifts
+DELETE /api/v2/admin/gift/delete/:giftId         - Delete gift
+POST   /api/v2/client/gift/send                  - Send gift (user to user)
+
+===============================================================================
+                              IMPORTANT NOTES
+===============================================================================
+
+🔹 Admin messages are stored as individual conversations with each user
+🔹 All admin broadcast messages have "isAdminBroadcast": true flag
+🔹 Gift codes are auto-generated 7-digit unique numbers
+🔹 Gift deletion is permanent and cannot be undone
+🔹 User IDs for gifts use ui_id, not MongoDB ObjectId
+🔹 Admin IDs use MongoDB ObjectId format
+🔹 All responses include "success" field for easy error checking
+🔹 Pagination supported on admin messages list
+
+===============================================================================
+                                 END OF GUIDE
+===============================================================================
+
+🎯 Complete APIs for Admin Messages and Gift Management!
+📱 Easy to integrate and test
+🚀 No authentication complexity - simple and fast! 
