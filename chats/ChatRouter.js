@@ -50,7 +50,19 @@ router.post("/send", async (req, res) => {
       conversation = new Conversation({
         members: [senderId, receiverId]
       });
-      await conversation.save();
+
+      try {
+        await conversation.save();
+      } catch (saveError) {
+        if (saveError.code === 11000) {
+          // Duplicate key error - conversation already exists
+          conversation = await Conversation.findOne({
+            members: { $all: [senderId, receiverId] },
+          });
+        } else {
+          throw saveError;
+        }
+      }
     }
 
     // Create message
@@ -218,7 +230,19 @@ router.post("/admin/broadcast", async (req, res) => {
         conversation = new Conversation({
           members: [adminId, user._id]
         });
-        await conversation.save();
+
+        try {
+          await conversation.save();
+        } catch (saveError) {
+          if (saveError.code === 11000) {
+            // Duplicate key error - conversation already exists
+            conversation = await Conversation.findOne({
+              members: { $all: [adminId, user._id] },
+            });
+          } else {
+            throw saveError;
+          }
+        }
       }
 
       // Create broadcast message
