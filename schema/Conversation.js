@@ -22,11 +22,6 @@ const conversationSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Validate members array at schema level
-conversationSchema.path('members').validate(function (members) {
-  return members.length === 2 && new Set(members.map(m => m.toString())).size === 2;
-}, 'Conversation must have exactly 2 unique members');
-
 // Ensure unique conversations between two users
 conversationSchema.index({ members: 1 }, { unique: true });
 

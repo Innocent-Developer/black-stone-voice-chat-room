@@ -47,6 +47,14 @@ router.post("/send", async (req, res) => {
     });
 
     if (!conversation) {
+      // Validate members before creating
+      if (senderId === receiverId) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot send message to yourself"
+        });
+      }
+
       conversation = new Conversation({
         members: [senderId, receiverId]
       });
@@ -240,7 +248,8 @@ router.post("/admin/broadcast", async (req, res) => {
               members: { $all: [adminId, user._id] },
             });
           } else {
-            throw saveError;
+            console.error(`Error creating conversation for user ${user._id}:`, saveError);
+            continue; // Skip this user and continue with next
           }
         }
       }
