@@ -20,7 +20,10 @@ const cache = new NodeCache();
 
 // ✅ Allowed Frontend Origins
 const allowedOrigins = [
-  "https://admp.funchatparty.online", // Your admin panel frontend domain
+  "https://admps.funchatparty.online", // Your admin panel frontend domain
+  "https://admp.blackstonevoicechatroom.online",
+  "http://localhost:3000",
+  "http://localhost:5000",
 ];
 
 // ✅ CORS Middleware with credentials support
