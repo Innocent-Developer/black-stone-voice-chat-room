@@ -8,9 +8,9 @@ const auth = require("../middleware/authMiddleware");
 // Utility function for error handling
 const handleError = (res, error, defaultMessage = "An error occurred") => {
   console.error(error);
-  res.status(500).json({ 
-    message: defaultMessage, 
-    error: error.message 
+  res.status(500).json({
+    message: defaultMessage,
+    error: error.message
   });
 };
 
@@ -23,8 +23,8 @@ router.post("/send", auth, async (req, res) => {
   const { receiverId, content } = req.body;
 
   if (!receiverId || !content) {
-    return res.status(400).json({ 
-      message: "Receiver ID and content are required" 
+    return res.status(400).json({
+      message: "Receiver ID and content are required"
     });
   }
 
@@ -71,7 +71,7 @@ router.get("/user/all-messages", auth, async (req, res) => {
   try {
     const messages = await Message.find({
       $or: [
-        { senderId: req.user.id }, 
+        { senderId: req.user.id },
         { receiverId: req.user.id }
       ],
     }).sort({ timestamp: -1 });
@@ -91,8 +91,8 @@ router.delete("/messages/:messageId", auth, async (req, res) => {
     });
 
     if (!message) {
-      return res.status(404).json({ 
-        message: "Message not found or unauthorized" 
+      return res.status(404).json({
+        message: "Message not found or unauthorized"
       });
     }
 
@@ -128,8 +128,8 @@ router.post("/conversations", auth, async (req, res) => {
     });
 
     if (!conversation) {
-      conversation = new Conversation({ 
-        members: [req.user.id, receiverId] 
+      conversation = new Conversation({
+        members: [req.user.id, receiverId]
       });
       await conversation.save();
     }
@@ -149,8 +149,8 @@ router.get("/messages/:conversationId", auth, async (req, res) => {
     });
 
     if (!conversation) {
-      return res.status(404).json({ 
-        message: "Conversation not found or unauthorized" 
+      return res.status(404).json({
+        message: "Conversation not found or unauthorized"
       });
     }
 
@@ -181,9 +181,9 @@ router.get("/history/:user2Id", auth, async (req, res) => {
       conversationId: conversation._id,
     }).sort({ timestamp: 1 });
 
-    res.status(200).json({ 
-      conversationId: conversation._id, 
-      messages 
+    res.status(200).json({
+      conversationId: conversation._id,
+      messages
     });
   } catch (err) {
     handleError(res, err, "Failed to fetch chat history");
@@ -199,16 +199,16 @@ router.delete("/conversations/:conversationId", auth, async (req, res) => {
     });
 
     if (!conversation) {
-      return res.status(404).json({ 
-        message: "Conversation not found or unauthorized" 
+      return res.status(404).json({
+        message: "Conversation not found or unauthorized"
       });
     }
 
     await Message.deleteMany({ conversationId: req.params.conversationId });
     await conversation.remove();
 
-    res.status(200).json({ 
-      message: "Conversation and all messages deleted" 
+    res.status(200).json({
+      message: "Conversation and all messages deleted"
     });
   } catch (err) {
     handleError(res, err, "Error deleting conversation");
@@ -263,15 +263,15 @@ router.get("/admin/messages", auth, async (req, res) => {
   }
 
   try {
-    const messages = await Message.find({ 
+    const messages = await Message.find({
       senderId: req.user.id,
-      isAdminBroadcast: true 
+      isAdminBroadcast: true
     }).sort({ timestamp: -1 });
 
     res.status(200).json(messages);
   } catch (err) {
     handleError(res, err, "Failed to fetch admin messages");
   }
-});
+})
 
 module.exports = router;
