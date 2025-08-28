@@ -46,7 +46,7 @@ router.post("/send", async (req, res) => {
     }
 
     // Always sort members to ensure uniqueness
-    const memberIds = [senderId, receiverId].map((id) => new mongoose.Types.ObjectId(id)).sort();
+    const memberIds = [senderId, receiverId].map((id) => new mongoose.Types.ObjectId(id)).sort()
 
     // Find or create conversation
     let conversation = await Conversation.findOne({ members: memberIds });
