@@ -62,6 +62,7 @@ const adminapplyBackgroundChange = require("../admin/ApproveRoomBAckGroundChange
 const sendUserToUser = require("../withdraws/sendusertouser");
 const { deleteBanner } = require("../Banner/deleteBaner");
 const autoExpireBanners = require("../Banner/autoExpireBanners");
+const { sendCointouserbym } = require("../Merchant/sendCointouserbym");
 // account routes
 router.post("/account/create/new", signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -244,6 +245,11 @@ router.post("/api/v1/agency/update", updateAgency);
 router.post("/api/v2/background/change/apply", applyBackgroundChange)
 router.post("/api/v2/admin/change/status/background", adminapplyBackgroundChange);
 router.get("/api/v2/admi/get/all/background/change/apply", allRequest);
+
+
+// send coin from merchant  
+
+router.post("/merchant/send/coin/to/user", sendCointouserbym);
 
 
 

@@ -1,0 +1,30 @@
+const mongoose = require("mongoose");
+
+const transactionSchema = new mongoose.Schema({
+    merchant_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Merchant",
+        required: true
+    },
+    user_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "AccountCreate",
+        required: true
+    },
+    gold: {
+        type: Number,
+        required: true,
+        min: 1
+    },
+    type: {
+        type: String,
+        enum: ["merchant_to_user", "user_to_merchant", "other"],
+        default: "merchant_to_user"
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+module.exports = mongoose.model("Transaction", transactionSchema);

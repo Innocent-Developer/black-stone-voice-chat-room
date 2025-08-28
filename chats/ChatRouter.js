@@ -6,12 +6,12 @@ const Message = require("../schema/Message");
 const Conversation = require("../schema/Conversation");
 const User = require("../schema/account-create");
 
+
 // Error handler helper
 const handleError = (res, error, message = "Error occurred") => {
   console.error(error);
   res.status(500).json({ success: false, message, error: error.message });
 };
-
 // -------------------------------------------------
 // USER CHAT
 // -------------------------------------------------
