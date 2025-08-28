@@ -288,6 +288,6 @@ router.get("/admin/users/:adminId", async (req, res) => {
   } catch (err) {
     handleError(res, err, "Failed to get users");
   }
-});
+})
 
 module.exports = router;
