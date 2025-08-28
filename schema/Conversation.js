@@ -22,7 +22,13 @@ const conversationSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Ensure unique conversations between two users
+// Always sort members before saving to avoid duplicates
+conversationSchema.pre("save", function (next) {
+  this.members = this.members.sort();
+  next();
+});
+
+// Ensure unique conversation between 2 users
 conversationSchema.index({ members: 1 }, { unique: true });
 
 // Update last message reference when new messages are added
