@@ -251,6 +251,35 @@ router.get("/api/v2/admi/get/all/background/change/apply", allRequest);
 
 router.post("/merchant/send/coin/to/user", sendCointouserbym);
 
+// upload file r2 
+const { uploadMiddleware, handleMulterError, uploadFileR2, deleteFileR2 } = require("../r2Storages/uploadFile");
+
+// Upload endpoint
+router.post("/upload/file", uploadMiddleware('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const result = await uploadFileR2(req.file);
+        res.status(200).json(result);
+    } catch (error) {
+        handleMulterError(error, res);
+    }
+});
+
+// Delete endpoint
+router.delete("/delete/file", async (req, res) => {
+    const { fileName } = req.body;
+
+    try {
+        const result = await deleteFileR2(fileName);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ error: 'Error deleting file', details: error.message });
+    }
+});
+
 
 
 module.exports = router;
