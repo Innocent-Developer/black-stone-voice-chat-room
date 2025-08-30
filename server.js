@@ -92,7 +92,7 @@ app.post("/admin/broadcast", async (req, res) => {
 
 // --- Health Check ---
 app.get("/", (req, res) => {
-  res.send(`✅ Server running `);
+  res.send("✅ Server running");
 });
 
 // --- Start ---
