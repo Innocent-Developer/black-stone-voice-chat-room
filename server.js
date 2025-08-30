@@ -103,22 +103,22 @@ app.get("/api/info/:id", async (req, res) => {
 // ✅ Admin Broadcast (official message) POST handler
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
 
-// app.post("/chats/users/admin/send", async (req, res) => {
-//   const { title, content, image } = req.body;
-//   const userId = req.headers.userid;
+app.post("/chats/users/admin/send", async (req, res) => {
+  const { title, content, image } = req.body;
+  const userId = req.headers.userid;
 
-//   if (!userId || !content) {
-//     return res.status(400).json({ error: "userId and content are required." });
-//   }
+  if (!userId || !content) {
+    return res.status(400).json({ error: "userId and content are required." });
+  }
 
-//   try {
-//     await sendAdminBroadcast(userId, { title, content, image });
-//     res.status(200).json({ message: "✅ Message sent successfully." });
-//   } catch (err) {
-//     console.error("Broadcast error:", err);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
+  try {
+    await sendAdminBroadcast(userId, { title, content, image });
+    res.status(200).json({ message: "✅ Message sent successfully." });
+  } catch (err) {
+    console.error("Broadcast error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // ✅ Health Check
 app.get("/", (req, res) => {
