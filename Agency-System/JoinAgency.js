@@ -11,7 +11,7 @@ const joinAgency = async (req, res) => {
         .json({ message: "Agency ID and UI ID are required." });
     }
 
-    const existingUser = await AccountCreate.findOne({ ui_id });
+    const existingUser = await AccountCreate.findOne({uid_id: ui_id });
     if (!existingUser) {
       return res
         .status(404)
