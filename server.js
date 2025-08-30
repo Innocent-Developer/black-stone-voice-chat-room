@@ -6,58 +6,86 @@ const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const passport = require("passport");
-const rateLimit = require("express-rate-limit");
 const NodeCache = require("node-cache");
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
-app.set('trust proxy', true); // ✅ Add this
 
-// In-memory cache
+// ✅ Allow cookies behind proxies (for secure cookies to work)
+app.set("trust proxy", true);
+
+// ✅ In-memory cache
 const cache = new NodeCache();
 
-// Rate Limiting (100 req/min/IP)
-// const limiter = rateLimit({
-//   windowMs: 60 * 1000,
-//   max: 100,
-//   message: "Too many requests, please try again later.",
-// });
-// // app.options("*", cors())
+// ✅ Allowed Frontend Origins
+const allowedOrigins = [
+  "https://admps.funchatparty.online", // Your admin panel frontend domain
+  "https://admps.blackstonevoicechatroom.online",
+  "http://localhost:3000",
+  "http://localhost:5000",
+];
 
-// // --- Middlewares ---
-// app.use(limiter);
+// ✅ CORS Middleware with credentials support
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "userId"],
+  })
+);
+
+// ✅ Debug log for CORS headers (optional, remove in production)
+app.use((req, res, next) => {
+  res.on("finish", () => {
+    console.log("CORS Headers:", {
+      "Access-Control-Allow-Origin": res.getHeader("Access-Control-Allow-Origin"),
+      "Access-Control-Allow-Credentials": res.getHeader("Access-Control-Allow-Credentials"),
+    });
+  });
+  next();
+});
+
+// ✅ Middleware
 app.use(compression());
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization","userId"],
-  credentials: true // only if you're using cookies/sessions
-}));
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+
+// ✅ Session for login/authorization if needed
 app.use(
   session({
     secret: process.env.JWT_SECRET || "default_secret",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      secure: true,     // true if your site is served over HTTPS
+      sameSite: "None", // required for cross-site cookies
+    },
   })
 );
 
+// ✅ Passport Setup (Google Login or other auth)
 require("./google-congif/passport.js");
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- DB ---
+// ✅ Database Connection
 const dbconnect = require("./db connect/dbconnect");
 dbconnect();
 
-// --- Routes ---
+// ✅ Your main routes
 app.use("/", require("./routers/Routes.js"));
 app.use("/auth", require("./auths/auth.js"));
 
-// --- Cached Endpoint Example ---
+// ✅ Example: Cached Endpoint (test route)
 app.get("/api/info/:id", async (req, res) => {
   const id = req.params.id;
   const key = `info_${id}`;
@@ -72,30 +100,32 @@ app.get("/api/info/:id", async (req, res) => {
   res.json({ from: "live", data });
 });
 
-// --- Admin Broadcast ---
+// ✅ Admin Broadcast (official message) POST handler
 const sendAdminBroadcast = require("./officalMassege/createMassege.js");
 
-app.post("/admin/broadcast", async (req, res) => {
-  const { adminId, message } = req.body;
-  if (!adminId || !message) {
-    return res.status(400).json({ error: "adminId and message are required." });
+app.post("/chats/users/admin/send", async (req, res) => {
+  const { title, content, image } = req.body;
+  const userId = req.headers.userid;
+
+  if (!userId || !content) {
+    return res.status(400).json({ error: "userId and content are required." });
   }
 
   try {
-    await sendAdminBroadcast(Number(adminId), message);
-    res.status(200).json({ status: "✅ Broadcast sent" });
+    await sendAdminBroadcast(userId, { title, content, image });
+    res.status(200).json({ message: "✅ Message sent successfully." });
   } catch (err) {
-    console.error(err);
+    console.error("Broadcast error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// --- Health Check ---
+// ✅ Health Check
 app.get("/", (req, res) => {
-  res.send("✅ Server running");
+  res.send(`✅ Server running on ${PORT}`  );
 });
 
-// --- Start ---
+// ✅ Start Server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
