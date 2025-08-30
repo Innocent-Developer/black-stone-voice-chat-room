@@ -9,7 +9,7 @@ const createAgency = async (req, res) => {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    const existingUser = await AccountCreate.findOne({ ui_id });
+    const existingUser = await AccountCreate.findOne({ ui_id:ui_id });
     if (!existingUser) {
       return res.status(404).json({ message: "Only registered users can create an agency." });
     }
