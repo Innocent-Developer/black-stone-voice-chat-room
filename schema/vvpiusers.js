@@ -15,6 +15,7 @@ const vvpiUsersSchema = new Schema({
     vpiframe:{
         type: String,
     },
+    
     bubbleChat:{
         type: String,
     },
