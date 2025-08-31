@@ -261,7 +261,7 @@ router.delete("/admin/delete/vvpis/item", require("../VVpis/deleteVVIPS"));
 
 
 // uploadFile r2 
-router.post('/upload', uploadMiddleware('file'), async (req, res) => {
+router.post('/upload/file', uploadMiddleware('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file provided' });
