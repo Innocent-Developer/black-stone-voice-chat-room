@@ -60,6 +60,7 @@ const applyBackgroundChange = require("../RoomsApi/backGroundChange");
 const allRequest = require("../admin/GetAllResuestofBackground");
 const adminapplyBackgroundChange = require("../admin/ApproveRoomBAckGroundChange");
 const sendUserToUser = require("../withdraws/sendusertouser");
+const getRecordUserBuy = require("../Shop/getRecordUserforBuy");
 // account routes
 router.post("/account/create/new", signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -230,6 +231,7 @@ router.delete("/shop/delete/item", deleteItem)
 router.post("/shop/update/item", updateItem)
 router.get("/shop/items", getAllItems)
 router.post("/admin/send/item", adminSendGift)
+router.post("/shop/get/users/items",getRecordUserBuy)
 
 
 // Agency 

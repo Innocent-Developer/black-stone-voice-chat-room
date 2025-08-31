@@ -13,6 +13,12 @@ const createAgency = async (req, res) => {
     if (!existingUser) {
       return res.status(404).json({ message: "Only registered users can create an agency." });
     }
+    const alReadyCreate = await Agency.findOne({
+      createrId: ui_id,
+    })
+    if(alReadyCreate){
+      return res.status(400).json({ message: "You have already created an agency." });
+    };
 
     const existingAgency = await Agency.findOne({ agencyName });
     if (existingAgency) {
