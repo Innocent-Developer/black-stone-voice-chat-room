@@ -64,6 +64,7 @@ const getRecordUserBuy = require("../Shop/getRecordUserforBuy");
 const getAllVVIPs = require("../VVpis/getAllVVIPs");
 const BuyVVIPS = require("../VVpis/BuyVVIPS");
 const getHistory = require("../VVpis/GetHistory");
+const { uploadFileR2, deleteFileR2, uploadMiddleware } = require("../uploadR2/uploadFileR2");
 // account routes
 router.post("/account/create/new", signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -258,6 +259,35 @@ router.post("/admin/create/vvpis/item", require("../VVpis/createVpi"));
 router.post("/admin/update/vvpis/item", require("../VVpis/updateVVIPS"));
 router.delete("/admin/delete/vvpis/item", require("../VVpis/deleteVVIPS"));
 
+
+// uploadFile r2 
+router.post('/upload', uploadMiddleware('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file provided' });
+        }
+
+        const result = await uploadFileR2(req.file);
+        res.json(result);
+    } catch (error) {
+        handleMulterError(error, res);
+    }
+});
+
+// Delete file from R2
+router.delete('/file', async (req, res) => {
+    try {
+        const { fileName } = req.body;
+        
+        const result = await deleteFileR2(fileName);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ 
+            error: 'Failed to delete file', 
+            details: error.message 
+        });
+    }
+});
 
 
 module.exports = router;
