@@ -1,9 +1,9 @@
 const VvpiUsers = require("../schema/vvpiusers");
 
 const createVpi = async (req, res) => {
-    const { ui_id, vipTital, vipDescription, vpiframe, bubbleChat, entarneentarneShow, price, days, spicelGift, profileheadware } = req.body;
+    const { ui_id, vipTital, vipDescription, vpiframe, bubbleChat, entarneentarneShow, price, days, spicelGift, profileheadware ,pic} = req.body;
 
-    if (!ui_id || !vipTital || !vipDescription || !vpiframe || !bubbleChat || !entarneentarneShow || !price || !days || !spicelGift || !profileheadware) {
+    if (!ui_id ) {
         return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -13,6 +13,7 @@ const createVpi = async (req, res) => {
             vipTital,
             vipDescription,
             vpiframe,
+            pic,
             bubbleChat,
             entarneentarneShow,
             price,

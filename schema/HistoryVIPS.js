@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const vvpiUsersSchema = new Schema({
+const historyVIPSschema = new Schema({
     ui_id:{
         type:Number,
         required: true,
@@ -36,7 +36,14 @@ const vvpiUsersSchema = new Schema({
     },
     pic:{
         type: String,
+    },
+    buyDate:{
+        type: Date,
+        default: Date.now
+    },
+    expireDate:{
+        type: Date,
     }
 });
-const VvpiUsers = mongoose.model("VvpiUsers", vvpiUsersSchema);
-module.exports = VvpiUsers;
+const HistoryVIPS = mongoose.model("HistoryVIPS", historyVIPSschema);
+module.exports = HistoryVIPS;

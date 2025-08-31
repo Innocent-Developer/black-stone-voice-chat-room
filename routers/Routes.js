@@ -61,6 +61,9 @@ const allRequest = require("../admin/GetAllResuestofBackground");
 const adminapplyBackgroundChange = require("../admin/ApproveRoomBAckGroundChange");
 const sendUserToUser = require("../withdraws/sendusertouser");
 const getRecordUserBuy = require("../Shop/getRecordUserforBuy");
+const getAllVVIPs = require("../VVpis/getAllVVIPs");
+const BuyVVIPS = require("../VVpis/BuyVVIPS");
+const getHistory = require("../VVpis/GetHistory");
 // account routes
 router.post("/account/create/new", signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -244,6 +247,16 @@ router.post("/api/v1/agency/update", updateAgency);
 router.post("/api/v2/background/change/apply", applyBackgroundChange)
 router.post("/api/v2/admin/change/status/background", adminapplyBackgroundChange);
 router.get("/api/v2/admi/get/all/background/change/apply", allRequest);
+
+// vvips
+
+
+router.get("/get/all/vvpis/items", getAllVVIPs);
+router.post("/buy/vvpis/item", BuyVVIPS);
+router.post("/get/vvpis/purchase/history", getHistory);
+router.post("/admin/create/vvpis/item", require("../VVpis/createVpi"));
+router.post("/admin/update/vvpis/item", require("../VVpis/updateVVIPS"));
+router.delete("/admin/delete/vvpis/item", require("../VVpis/deleteVVIPS"));
 
 
 
