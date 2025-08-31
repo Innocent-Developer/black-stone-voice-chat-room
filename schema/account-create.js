@@ -17,6 +17,10 @@ const accountCreateSchema = new Schema(
       unique: true,
       match: [/\S+@\S+\.\S+/, "Please use a valid email address."],
     },
+    userType:{
+      type: String, 
+      default: "user",
+    },
 
     // ✅ If you want phone / number uniqueness only when present
     number: {

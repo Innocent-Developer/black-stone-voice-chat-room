@@ -1,5 +1,6 @@
 const Merchant = require("../schema/merchantschema");
 const nodemailer = require("nodemailer");
+const AccountCreate = require("../schema/account-create");
 
 const approveMerchant = async (req, res) => {
   try {
@@ -9,7 +10,12 @@ const approveMerchant = async (req, res) => {
     if (!merchant) {
       return res.status(404).json({ message: "Merchant not found." });
     }
+    const account = await AccountCreate.findOne({ ui_id: merchant.ui_id });
     if(merchant.status === "approved") {
+      if (account) {
+        account.userType = "merchant";
+        await account.save();
+      }
       return res.status(400).json({
         massege:'Already Merchant Approve'
       })
