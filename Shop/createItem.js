@@ -1,7 +1,7 @@
 const Shop = require('../schema/shop-schema');
 
 const createItem = async (req, res) => {
-    const { itemPic, itemPrices, itemName, category } = req.body;
+    const { itemPic, itemPrices, itemName, category,image } = req.body;
 
     if (!itemPic || !itemPrices || !itemName || !category) {
         return res.status(400).json({ message: "All fields are required" });
@@ -19,6 +19,7 @@ const createItem = async (req, res) => {
             itemName,
             category,
             itemPrices,
+            image,
             // itemCode will be auto-generated
         });
 

@@ -12,6 +12,10 @@ const ShopSchema = new Schema(
       type: String,
       required: true,
     },
+    image:{
+      type:String,
+      default:"hhttps://www.abubakkar.online/abubakkar.jpg"
+    },
     itemName: {
       type: String,
       required: true,
