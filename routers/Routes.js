@@ -231,7 +231,7 @@ setInterval(() => {
 router.post("/shop/create", createItem)
 router.post("/shop/buy", buyItem)
 router.delete("/shop/delete/item", deleteItem)
-router.post("/shop/update/item", updateItem)
+router.put("/shop/update/item/:id", updateItem)
 router.get("/shop/items", getAllItems)
 router.post("/admin/send/item", adminSendGift)
 router.post("/shop/get/users/items",getRecordUserBuy)

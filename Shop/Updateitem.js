@@ -1,15 +1,32 @@
-const Shop = require("../schema/shop-schema"); // Import the Shop model
+const Shop = require("../schema/shop-schema");
 
 const updateItem = async (req, res) => {
   try {
-    const { itemCode } = req.body; 
-    const { itemName, itemPrice, description, imageUrl } = req.body; 
+    const { id } = req.params; // The frontend sends the ID in the URL
+    const { itemName, itemPrices, category, itemPic, image } = req.body;
 
-    // Find item by itemCode and update it
-    const updatedItem = await Shop.findOneAndUpdate(
-      { itemCode }, // filter
-      { itemName, itemPrice, description, imageUrl }, // fields to update
-      { new: true } // return the updated document
+    // Validate required fields
+    if (!itemName || !itemPrices || !category) {
+      return res.status(400).json({ message: "Item name, prices, and category are required" });
+    }
+
+    // Validate that all duration prices are provided
+    const { "7day": price7, "14day": price14, "30day": price30 } = itemPrices;
+    if (price7 == null || price14 == null || price30 == null) {
+      return res.status(400).json({ message: "All itemPrices durations are required" });
+    }
+
+    // Find item by ID and update it
+    const updatedItem = await Shop.findByIdAndUpdate(
+      id, // Using the ID from URL params
+      { 
+        itemName, 
+        itemPrices, 
+        category, 
+        itemPic, 
+        image 
+      }, // fields to update
+      { new: true, runValidators: true } // return the updated document and run validation
     );
 
     if (!updatedItem) {
@@ -21,9 +38,9 @@ const updateItem = async (req, res) => {
       updatedItem,
     });
   } catch (error) {
-    console.error(error.message);
+    console.error("Update error:", error.message);
     return res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-module.exports=updateItem
+module.exports = updateItem;
