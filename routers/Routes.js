@@ -257,7 +257,7 @@ router.post("/buy/vvpis/item", BuyVVIPS);
 router.post("/get/vvpis/purchase/history", getHistory);
 router.post("/admin/create/vvpis/item", require("../VVpis/createVpi"));
 router.post("/admin/update/vvpis/item", require("../VVpis/updateVVIPS"));
-router.delete("/admin/delete/vvpis/item", require("../VVpis/deleteVVIPS"));
+router.delete("/admin/delete/vvpis/item/:id", require("../VVpis/deleteVVIPS"));
 
 
 // uploadFile r2 
