@@ -128,6 +128,7 @@ router.get("/get/coin-price", getCoinPrice);
 router.post("/api/v2/client/gift/send", sendGift);
 router.get("/api/v2/client/gift/get/all", require("../gifts/getAllGifts"));
 router.post("/api/v2/admin/gift/create", require("../gifts/create-gift"));
+router.delete("/api/v2/admin/gift/delete/:id", require("../gifts/deleteGift"));
 
 // baner add
 router.post("/admin/add/banner", addBanner);
@@ -258,6 +259,7 @@ router.post("/get/vvpis/purchase/history", getHistory);
 router.post("/admin/create/vvpis/item", require("../VVpis/createVpi"));
 router.post("/admin/update/vvpis/item", require("../VVpis/updateVVIPS"));
 router.delete("/admin/delete/vvpis/item/:id", require("../VVpis/deleteVVIPS"));
+router.post("/admin/send/vvpis/item", require("../VVpis/adminSendVvips"));
 
 
 // uploadFile r2 
