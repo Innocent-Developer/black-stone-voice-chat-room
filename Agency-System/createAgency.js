@@ -19,6 +19,12 @@ const createAgency = async (req, res) => {
     if(alReadyCreate){
       return res.status(400).json({ message: "You have already created an agency." });
     };
+    //update user data agencyCreaterType to host 
+    existingUser.agencyCreaterType = "Host";
+    await existingUser.save();
+    // Check if agency with the same name already exists
+    
+
 
     const existingAgency = await Agency.findOne({ agencyName });
     if (existingAgency) {

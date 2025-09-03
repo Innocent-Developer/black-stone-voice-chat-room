@@ -21,6 +21,10 @@ const accountCreateSchema = new Schema(
       type: String, 
       default: "user",
     },
+    agencyCreaterType:{
+      type: String, 
+      default: "no",
+    },
 
     // ✅ If you want phone / number uniqueness only when present
     number: {

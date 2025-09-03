@@ -12,22 +12,30 @@ const joinAgency = async (req, res) => {
     }
 
     const existingUser = await AccountCreate.findOne({ ui_id });
-    
+
     if (!existingUser) {
       return res
         .status(404)
         .json({ message: "Only registered users can join an agency." });
     }
-
+    //update user agencyCreaterType to member
+    existingUser.agencyCreaterType = "Member";
+    await existingUser.save();
+    // If user is an agency creator, they cannot join another agency
+    if (existingUser.agencyCreaterType === "Host") {
+      return res
+        .status(403)
+        .json({ message: "Agency creators cannot join another agency." });
+    }
     // Check if user is already a member of any agency
     const existingMembership = await Agency.findOne({
       "joinUsers.ui_id": Number(ui_id)
     });
-    
+
     if (existingMembership) {
       return res
         .status(409)
-        .json({ 
+        .json({
           message: "User is already a member of an agency. Leave your current agency first to join another one.",
           currentAgencyId: existingMembership.agencyId
         });
