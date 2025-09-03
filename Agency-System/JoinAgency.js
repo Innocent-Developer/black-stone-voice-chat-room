@@ -22,7 +22,7 @@ const joinAgency = async (req, res) => {
     existingUser.agencyCreaterType = "host";
     await existingUser.save();
     // If user is an agency creator, they cannot join another agency
-    if (existingUser.agencyCreaterType === "Host") {
+    if (existingUser.agencyCreaterType === "host") {
       return res
         .status(403)
         .json({ message: "Agency creators cannot join another agency." });
