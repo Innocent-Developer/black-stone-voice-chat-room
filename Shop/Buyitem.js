@@ -1,16 +1,18 @@
 const Shop = require("../schema/shop-schema");
 const AccountCreate = require("../schema/account-create");
-const History = require("../schema/Shop-histroy"); // Ensure the filename is correct
+const History = require("../schema/Shop-histroy");
 
 const buyItem = async (req, res) => {
   try {
-    const { itemCode, ui_id, durication } = req.body;
+    // Handle both spellings for backward compatibility
+    const { itemCode, ui_id, duration, durication } = req.body;
+    const actualDuration = duration || durication;
 
     // Validate input
-    if (!itemCode || !ui_id || !durication) {
-      return res
-        .status(400)
-        .json({ message: "itemCode, ui_id, and durication are required" });
+    if (!itemCode || !ui_id || !actualDuration) {
+      return res.status(400).json({ 
+        message: "itemCode, ui_id, and duration are required" 
+      });
     }
 
     // Find item
@@ -20,11 +22,11 @@ const buyItem = async (req, res) => {
     }
 
     // Get price for selected duration
-    const itemPrice = item.itemPrices?.[durication];
+    const itemPrice = item.itemPrices?.[actualDuration];
     if (itemPrice == null) {
-      return res
-        .status(400)
-        .json({ message: `Price for duration '${durication}' not available` });
+      return res.status(400).json({ 
+        message: `Price for duration '${actualDuration}' not available` 
+      });
     }
 
     // Find user
@@ -45,7 +47,7 @@ const buyItem = async (req, res) => {
     await History.create({
       itemCode: item.itemCode,
       itemPrice,
-      durication,
+      duration: actualDuration,
       ui_id,
     });
 
@@ -56,9 +58,10 @@ const buyItem = async (req, res) => {
     });
   } catch (error) {
     console.error("Buy item error:", error.message);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    return res.status(500).json({ 
+      message: "Server error", 
+      error: error.message 
+    });
   }
 };
 

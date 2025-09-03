@@ -19,7 +19,7 @@ const joinAgency = async (req, res) => {
         .json({ message: "Only registered users can join an agency." });
     }
     //update user agencyCreaterType to member
-    existingUser.agencyCreaterType = "Member";
+    existingUser.agencyCreaterType = "host";
     await existingUser.save();
     // If user is an agency creator, they cannot join another agency
     if (existingUser.agencyCreaterType === "Host") {
