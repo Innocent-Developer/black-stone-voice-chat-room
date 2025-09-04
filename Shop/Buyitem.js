@@ -5,14 +5,21 @@ const History = require("../schema/Shop-histroy");
 const buyItem = async (req, res) => {
   try {
     // Handle both spellings for backward compatibility
-    const { itemCode, ui_id, duration, durication } = req.body;
+    const { itemCode, ui_id, duration, durication, u_id } = req.body;
     const actualDuration = duration || durication;
+    const actualUid = ui_id || u_id; // Handle both ui_id and u_id
 
     // Validate input
-    if (!itemCode || !ui_id || !actualDuration) {
+    if (!itemCode || !actualUid || !actualDuration) {
       return res.status(400).json({ 
-        message: "itemCode, ui_id, and duration are required" 
+        message: "itemCode, user ID, and duration are required" 
       });
+    }
+
+    // Convert numeric duration to string format if needed
+    let durationKey = actualDuration;
+    if (typeof actualDuration === 'number') {
+      durationKey = `${actualDuration}day`;
     }
 
     // Find item
@@ -22,7 +29,7 @@ const buyItem = async (req, res) => {
     }
 
     // Get price for selected duration
-    const itemPrice = item.itemPrices?.[actualDuration];
+    const itemPrice = item.itemPrices?.[durationKey];
     if (itemPrice == null) {
       return res.status(400).json({ 
         message: `Price for duration '${actualDuration}' not available` 
@@ -30,7 +37,7 @@ const buyItem = async (req, res) => {
     }
 
     // Find user
-    const account = await AccountCreate.findOne({ ui_id });
+    const account = await AccountCreate.findOne({ ui_id: actualUid });
     if (!account) {
       return res.status(400).json({ message: "Account not found" });
     }
@@ -48,7 +55,7 @@ const buyItem = async (req, res) => {
       itemCode: item.itemCode,
       itemPrice,
       duration: actualDuration,
-      ui_id,
+      ui_id: actualUid,
     });
 
     return res.status(200).json({
