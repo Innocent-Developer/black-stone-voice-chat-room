@@ -19,11 +19,11 @@ const DeleteAgency = async (req, res) => {
         .json({ message: "Only registered users can delete an agency." });
     }
     // If user is not an agency creator, they cannot delete an agency
-    if (existingUser.agencyCreaterType !== "Host") {
-      return res
-        .status(403)
-        .json({ message: "Only agency creators can delete an agency." });
-    }
+    // if (existingUser.agencyCreaterType !== "Host") {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "Only agency creators can delete an agency." });
+    // }
 
     const agency = await Agency.findOne({ agencyId: Number(agencyId) });
     if (!agency) {
