@@ -47,7 +47,7 @@ const DeleteAgency = async (req, res) => {
     }
 
     // Reset the creator's agencyCreaterType
-    existingUser.agencyCreaterType = "no";
+    existingUser.agencyCreaterType = "";
     await existingUser.save();
 
     // Delete the agency
