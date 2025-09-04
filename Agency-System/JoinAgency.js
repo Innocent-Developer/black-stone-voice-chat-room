@@ -23,6 +23,12 @@ const joinAgency = async (req, res) => {
         .status(403)
         .json({ message: "Agency creators cannot join another agency." });
     }
+    if(existingUser.agencyCreaterType === "agent"){
+      return res
+      .status(403)
+      .json({ message: "You are already an agent in another agency, you cannot join as a member." });
+      
+    };
     //update user agencyCreaterType to member
     existingUser.agencyCreaterType = "host";
     await existingUser.save();
