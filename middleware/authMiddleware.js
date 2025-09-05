@@ -7,6 +7,6 @@ module.exports = function (req, res, next) {
     return res.status(401).json({ message: "Access denied: userId is required" });
   }
 
-  req.user = { id: userId };
+  req.user = { id: userId , role: "" }; // Example user object, in real scenarios fetch from DB
   next();
 };

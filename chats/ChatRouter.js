@@ -290,6 +290,65 @@ router.get("/admin/messages", auth, async (req, res) => {
   }
 })
 
+// Send broadcast message from admin to all users
+router.post("/admin/broadcast", auth, async (req, res) => {
+  try {
+   
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    
+    const { title, content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ message: "Content is required" });
+    }
+
+    // Get all users except admin
+    const users = await User.find({ 
+      _id: { $ne: req.user.id },
+      role: { $ne: 'admin' }
+    });
+
+    // Create broadcast messages for all users
+    const messages = await Promise.all(users.map(async (user) => {
+      const message = new Message({
+        senderId: req.user.id,
+        receiverId: user._id,
+        title,
+        content,
+        isAdminBroadcast: true
+      });
+      return await message.save();
+    }));
+
+    res.status(201).json({
+      message: "Broadcast sent successfully",
+      recipientCount: messages.length
+    });
+
+  } catch (err) {
+    handleError(res, err, "Failed to send broadcast message");
+  }
+});
+
+// Get admin broadcasts for regular users
+router.get("/broadcasts", auth, async (req, res) => {
+  try {
+    const messages = await Message.find({
+      receiverId: req.user.id,
+      isAdminBroadcast: true
+    })
+    .sort({ timestamp: -1 })
+    .populate('senderId', 'username'); // Assuming you want sender's username
+
+    res.status(200).json(messages);
+  } catch (err) {
+    handleError(res, err, "Failed to fetch broadcast messages");
+  }
+});
+
 // ----------------------------------------
 // GET LAST MESSAGE BETWEEN TWO USERS
 // ----------------------------------------
