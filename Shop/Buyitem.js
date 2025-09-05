@@ -11,15 +11,17 @@ const buyItem = async (req, res) => {
 
     // Validate input
     if (!itemCode || !actualUid || !actualDuration) {
-      return res.status(400).json({ 
-        message: "itemCode, user ID, and duration are required" 
+      return res.status(400).json({
+        message: "itemCode, user ID, and duration are required"
       });
     }
 
-    // Convert numeric duration to string format if needed
-    let durationKey = actualDuration;
-    if (typeof actualDuration === 'number') {
-      durationKey = `${actualDuration}day`;
+    // Convert numeric duration to string format for schema + price lookup
+    let durationKey;
+    if (typeof actualDuration === "number") {
+      durationKey = `${actualDuration}day`;  // e.g., 7 -> "7day"
+    } else {
+      durationKey = actualDuration; // already string
     }
 
     // Find item
@@ -31,8 +33,8 @@ const buyItem = async (req, res) => {
     // Get price for selected duration
     const itemPrice = item.itemPrices?.[durationKey];
     if (itemPrice == null) {
-      return res.status(400).json({ 
-        message: `Price for duration '${actualDuration}' not available` 
+      return res.status(400).json({
+        message: `Price for duration '${durationKey}' not available`
       });
     }
 
@@ -42,6 +44,7 @@ const buyItem = async (req, res) => {
       return res.status(400).json({ message: "Account not found" });
     }
 
+    // Check balance
     if (itemPrice > account.gold) {
       return res.status(400).json({ message: "Insufficient balance" });
     }
@@ -50,11 +53,12 @@ const buyItem = async (req, res) => {
     account.gold -= itemPrice;
     await account.save();
 
-    // Save history
+    // Log purchase history
+    
     await History.create({
       itemCode: item.itemCode,
       itemPrice,
-      duration: actualDuration,
+      durication: durationKey, // match schema
       ui_id: actualUid,
     });
 
@@ -65,9 +69,9 @@ const buyItem = async (req, res) => {
     });
   } catch (error) {
     console.error("Buy item error:", error.message);
-    return res.status(500).json({ 
-      message: "Server error", 
-      error: error.message 
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message
     });
   }
 };
