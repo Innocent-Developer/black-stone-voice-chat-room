@@ -3,7 +3,7 @@ const router = express.Router();
 const Message = require("../schema/Message");
 const Conversation = require("../schema/Conversation");
 const User = require("../schema/account-create");
-const auth = require("../middleware/authMiddleware");
+const auth = require("../middleware/authMiddleware"); // <-- Import your middleware
 
 // Utility function for error handling
 const handleError = (res, error, defaultMessage = "An error occurred") => {
@@ -14,11 +14,23 @@ const handleError = (res, error, defaultMessage = "An error occurred") => {
   });
 };
 
+// Utility function to get or create a conversation between two users
+async function getOrCreateConversation(userId1, userId2) {
+  let conversation = await Conversation.findOne({
+    members: { $all: [userId1, userId2] },
+  });
+  if (!conversation) {
+    conversation = new Conversation({ members: [userId1, userId2] });
+    await conversation.save();
+  }
+  return conversation;
+}
+
 // ----------------------------------------
 // MESSAGE ENDPOINTS
 // ----------------------------------------
 
-// Send a direct message
+// Send a direct message (ensure conversationId is set)
 router.post("/send", auth, async (req, res) => {
   const { receiverId, content } = req.body;
 
@@ -35,10 +47,14 @@ router.post("/send", auth, async (req, res) => {
       return res.status(404).json({ message: "Receiver not found" });
     }
 
+    // Ensure conversation exists
+    const conversation = await getOrCreateConversation(req.user.id, receiverId);
+
     const message = new Message({
       senderId: req.user.id,
       receiverId,
       content,
+      conversationId: conversation._id, // Ensure conversationId is set
     });
 
     await message.save();
@@ -96,7 +112,7 @@ router.delete("/messages/:messageId", auth, async (req, res) => {
       });
     }
 
-    await message.remove();
+    await Message.deleteOne({ _id: req.params.messageId }); // Use deleteOne instead of remove
     res.status(200).json({ message: "Message deleted successfully" });
   } catch (err) {
     handleError(res, err, "Error deleting message");
@@ -145,7 +161,7 @@ router.get("/messages/:conversationId", auth, async (req, res) => {
   try {
     const conversation = await Conversation.findOne({
       _id: req.params.conversationId,
-      members: req.user.id
+      members: { $in: [req.user.id] } // Fix: use $in for array membership
     });
 
     if (!conversation) {
@@ -195,7 +211,7 @@ router.delete("/conversations/:conversationId", auth, async (req, res) => {
   try {
     const conversation = await Conversation.findOne({
       _id: req.params.conversationId,
-      members: req.user.id
+      members: { $in: [req.user.id] } // Fix: use $in for array membership
     });
 
     if (!conversation) {
@@ -205,7 +221,7 @@ router.delete("/conversations/:conversationId", auth, async (req, res) => {
     }
 
     await Message.deleteMany({ conversationId: req.params.conversationId });
-    await conversation.remove();
+    await Conversation.deleteOne({ _id: req.params.conversationId }); // Use deleteOne
 
     res.status(200).json({
       message: "Conversation and all messages deleted"
@@ -273,5 +289,38 @@ router.get("/admin/messages", auth, async (req, res) => {
     handleError(res, err, "Failed to fetch admin messages");
   }
 })
+
+// ----------------------------------------
+// GET LAST MESSAGE BETWEEN TWO USERS
+// ----------------------------------------
+router.get("/last-message/:user2Id", auth, async (req, res) => {
+  const { user2Id } = req.params;
+  try {
+    const conversation = await Conversation.findOne({
+      members: { $all: [req.user.id, user2Id] },
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ message: "No conversation found" });
+    }
+
+    const lastMessage = await Message.findOne({
+      conversationId: conversation._id,
+    }).sort({ timestamp: -1 }); // Get the latest message
+
+    if (!lastMessage) {
+      return res.status(404).json({ message: "No messages found" });
+    }
+
+    res.status(200).json(lastMessage);
+  } catch (err) {
+    handleError(res, err, "Failed to fetch last message");
+  }
+});
+
+// Example: Protect a route
+router.get("/protected-route", auth, (req, res) => {
+  res.json({ message: "You are authenticated!", user: req.user });
+});
 
 module.exports = router;

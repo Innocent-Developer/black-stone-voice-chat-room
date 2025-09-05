@@ -357,4 +357,46 @@ exports.kickOffMember = async (req, res) => {
   }
 };
 
+//create a new api that are use to seen all gift send form users in this room 
+exports.getRoomGifts = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+
+    const room = await Room.findOne({ roomId });
+    if (!room) return res.status(404).json({ error: "Room not found" });
+
+    res.status(200).json({ gifts: room.gifts || [] });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Endpoint to send a gift in a room
+exports.sendGift = async (req, res) => {
+  try {
+    const { roomId, ui_id, giftType, giftValue } = req.body;
+
+    const room = await Room.find({roomId });
+    const user = await User.find({ui_id});
+    
+    if (!room || !user)
+      return res.status(404).json({ error: "Room or User not found" }); 
+    // Check if user is a room member
+    const isMember = room.members.includes(ui_id);
+    if (!isMember) {
+      return res
+        .status(403)
+        .json({ error: "You must join the room to send gifts." });
+    }
+
+    // Add gift to room's gifts array
+    room.gifts.push({ sender: ui_id, giftType, giftValue });
+    await room.save();
+
+    res.status(200).json({ message: "Gift sent successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};  
+
 
