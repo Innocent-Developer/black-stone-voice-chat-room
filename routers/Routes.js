@@ -65,6 +65,7 @@ const getAllVVIPs = require("../VVpis/getAllVVIPs");
 const BuyVVIPS = require("../VVpis/BuyVVIPS");
 const getHistory = require("../VVpis/GetHistory");
 const { uploadFileR2, deleteFileR2, uploadMiddleware } = require("../uploadR2/uploadFileR2");
+const autoExpireBanners = require("../Banner/autoExpireBanners");
 // account routes
 router.post("/account/create/new", signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -137,9 +138,9 @@ router.get("/client/get/banner/i/d/full/n/:id", getBannerbyid);
 router.delete("/admin/delete/banner/:id", require("../Banner/deleteBanner"));
 // router.put("/admin/update/banner/:id", require("../Banner/updateBanner"));
 
-// setInterval(() => {
-//   autoExpireBanners();
-// }, 60 * 1000); // every 1 minute
+setInterval(() => {
+  autoExpireBanners();
+}, 60 * 1000); // every 1 minute
 
 // user post thing
 router.post("/client/post/create", createPost);
