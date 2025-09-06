@@ -134,6 +134,8 @@ router.delete("/api/v2/admin/gift/delete/:id", require("../gifts/deleteGift"));
 router.post("/admin/add/banner", addBanner);
 router.get("/client/get/banner", getBanner);
 router.get("/client/get/banner/i/d/full/n/:id", getBannerbyid);
+router.delete("/admin/delete/banner/:id", require("../Banner/deleteBanner"));
+// router.put("/admin/update/banner/:id", require("../Banner/updateBanner"));
 
 // setInterval(() => {
 //   autoExpireBanners();
