@@ -399,4 +399,34 @@ exports.sendGift = async (req, res) => {
   }
 };  
 
+// leave user room 
 
+exports.laveRoom = async (req, res) => {
+  try {
+    const { roomId, ui_id } = req.body;
+
+    const room = await Room.find({ roomId });
+    const user = await User.find({ ui_id });
+
+    if (!room || !user)
+      return res.status(404).json({ error: "Room or User not found" });
+
+    // Check if user is a room member
+    const isMember = room.members.includes(ui_id);
+    if (!isMember) {
+      return res
+        .status(403)
+        .json({ error: "You are not a member of this room." });
+    }
+
+    // Remove user from room members
+    room.members.pull(ui_id);
+    await room.save();
+
+    res.status(200).json({ message: "User left the room successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// RoomsApi/roomController.js ends here
