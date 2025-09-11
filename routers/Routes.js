@@ -230,7 +230,7 @@ router.put("/admin/room-chat-toggle/:roomId", roomController.adminChatBan);
 // auto Expiry of rooms
 setInterval(() => {
   autoRoomExpiry();
-}, 60 * 1000); // every 1 minute
+}, 60*60 * 1000); // every 
 
 
 // Shops 
