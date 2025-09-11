@@ -2,16 +2,26 @@ const AccountCreate = require("../schema/account-create");
 
 const updateUser = async (req, res) => {
   try {
-    const { id, updateData } = req.body;
+    const { id, name, userName, avatarUrl } = req.body;
 
-    if (!id || !updateData) {
-      return res.status(400).json({ message: "User ID and update data are required." });
+    if (!id) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+
+    // Build update object only with provided fields
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (userName !== undefined) updateData.userName = userName;
+    if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No update data provided." });
     }
 
     const updatedUser = await AccountCreate.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { new: true } // returns the updated document
+      { new: true, runValidators: true } // ensure schema validation applies
     );
 
     if (!updatedUser) {

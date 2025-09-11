@@ -406,7 +406,7 @@ exports.laveRoom = async (req, res) => {
     const { roomId, ui_id } = req.body;
 
     const room = await Room.find({ roomId });
-    const user = await User.find({ ui_id });
+    const user = await User.find({ ui_id:ui_id });
 
     if (!room || !user)
       return res.status(404).json({ error: "Room or User not found" });
