@@ -228,11 +228,11 @@ exports.getAllRooms = async (req, res) => {
   try {
     const rooms = await Room.find();
     // show total members in each room
-    const roomsWithMemberCount = rooms.map(room => ({
+    const totalUser = rooms.map(room => ({
       ...room.toObject(),
       memberCount: room.members.length
     }));
-    res.status(200).json(rooms, roomsWithMemberCount);
+    res.status(200).json(rooms, totalUser);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -243,8 +243,11 @@ exports.getRoomById = async (req, res) => {
   try {
     const { roomId } = req.params;
     const room = await Room.findOne({ roomId });
+    // get total user in room
+    const totalUser = room.members.length;
+    console.log(totalUser);
     if (!room) return res.status(404).json({ error: "Room not found" });
-    res.status(200).json(room);
+    res.status(200).json(room,totalUser);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

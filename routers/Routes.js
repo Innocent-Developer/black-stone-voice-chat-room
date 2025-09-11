@@ -217,7 +217,7 @@ router.post("/block/room/user", roomController.blockUser);
 router.put("/update/room/:roomId", roomController.updateRoom);
 router.post('/room/:roomId/chat', roomController.sendMessage);
 router.get('/room/:roomId/chat', roomController.getMessages);
-router.post('/room/leave', roomController.leaveRoom);
+router.post('/room/leave', roomController.laveRoom);
 
 // admin room controllers
 router.get("/admin/rooms", roomController.getAllRooms);
@@ -248,13 +248,7 @@ router.get("/api/v1/get/all/agency", getAllAgency)
 router.post("/api/v1/agency/create", CreateAgency);
 router.post("/api/v1/join/agency", joinAgency);
 router.post("/api/v1/agency/update", updateAgency);
-router.post("/api/v1/agency/record", require("../Agency-System/getAgencyRecord"));
-router.post("/api/v1/agency/remove/member", require("../Agency-System/HostRemoveMember"));
-router.post("/api/v1/agency/delete", require("../Agency-System/Deleteagncy"));
-router.post("/api/v1/agency/request/create", require("../Agency-System/getbycreator"));
-router.post("/api/v1/agency/request/accept", require("../Agency-System/getbycreator"));
-router.post("/api/v1/agency/request/reject", require("../Agency-System/getbycreator"));
-router.get("/api/v1/agency/:agencyId/requests", require("../Agency-System/getbycreator"));
+
 
 
 // Room Background Change

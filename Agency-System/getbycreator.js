@@ -1,103 +1,127 @@
 const express = require('express');
 const router = express.Router();
-const Agency = require("../schema/agencies-schema.js");// Assuming Mongoose model
-const AgencyRequest = require('../schema/agency-request.js'); // Assuming Mongoose model
-const User =  require("../schema/account-create.js"); 
+const Agency = require("../schema/agencies-schema.js");
+const AgencyRequest = require('../schema/agency-request.js');
+const User = require("../schema/account-create.js");
 
 // GET /api/v1/agency/creator/:uiId - Get agency created by user
-router.get('/agency/creator/:uiId', async (req, res) => {
+router.get('/creator/:uiId', async (req, res) => {
     try {
         const { uiId } = req.params;
-        const agency = await Agency.findOne({ creator: uiId });
-        if (!agency) {
-            return res.status(404).json({ message: 'Agency not found' });
+        const agencies = await Agency.find({ creator: uiId });
+        if (!agencies || agencies.length === 0) {
+            return res.status(404).json({ message: 'No agencies found' });
         }
-        res.json(agency);
+        res.json(agencies);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
 // GET /api/v1/agency/member/:uiId - Get agency user joined
-router.get('/agency/member/:uiId', async (req, res) => {
+router.get('/member/:uiId', async (req, res) => {
     try {
         const { uiId } = req.params;
-        const agency = await Agency.findOne({ members: uiId });
-        if (!agency) {
-            return res.status(404).json({ message: 'Agency not found' });
+        const agencies = await Agency.find({ members: uiId });
+        if (!agencies || agencies.length === 0) {
+            return res.status(404).json({ message: 'No agencies found' });
         }
-        res.json(agency);
+        res.json(agencies);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
-// request create agency
-router.post('/agency/request/create', async (req, res) => {
+
+// POST /api/v1/agency/request/create - Create join request 
+router.post('/request/create', async (req, res) => {
     try {
-        const { agencyId } = req.body;
+        const { agencyId, userId } = req.body;
+        
+        // Validate agency exists
         const agency = await Agency.findById(agencyId);
         if (!agency) {
             return res.status(404).json({ message: 'Agency not found' });
         }
-        const request = await AgencyRequest.create({
-            agency: agency.agencyId,
-            user: agency.createrId,
+
+        // Check if request already exists
+        const existingRequest = await AgencyRequest.findOne({
+            agency: agencyId,
+            user: userId,
             status: 'pending'
         });
-        agency.requests.push(request.agencyId);
-        await agency.save();
-        res.json(request);
+
+        if (existingRequest) {
+            return res.status(400).json({ message: 'Request already pending' });
+        }
+
+        // Create new request
+        const request = await AgencyRequest.create({
+            agency: agencyId,
+            user: userId,
+            status: 'pending'
+        });
+
+        res.status(201).json(request);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
 // GET /api/v1/agency/:agencyId/requests - Get join requests
-router.get('/agency/:agencyId/requests', async (req, res) => {
+router.get('/:agencyId/requests', async (req, res) => {
     try {
         const { agencyId } = req.params;
-        const requests = await AgencyRequest.find({ agency: agencyId });
-        if (!requests) {
-            return res.status(404).json({ message: 'Requests not found' });
-        }
+        const requests = await AgencyRequest.find({ agency: agencyId })
+            .populate('user', 'name email')
+            .sort({ createdAt: -1 });
+            
         res.json(requests);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
-// POST /api/v1/agency/request/accept - Accept join request
-router.post('/agency/request/accept', async (req, res) => {
+// POST /api/v1/agency/request/accept - Accept join request  
+router.post('/request/accept', async (req, res) => {
     try {
         const { requestId } = req.body;
-        const request = await AgencyRequest.findById(requestId);
+        const request = await AgencyRequest.findById(requestId)
+            .populate('agency')
+            .populate('user');
+
         if (!request || request.status !== 'pending') {
-            return res.status(404).json({ message: 'Request not found or already processed' });
+            return res.status(404).json({ message: 'Invalid request' });
         }
+
         request.status = 'accepted';
         await request.save();
 
         // Add user to agency members
-        await Agency.findByIdAndUpdate(request.agency, { $addToSet: { joinUsers: request.user._id } });
+        await Agency.findByIdAndUpdate(
+            request.agency._id,
+            { $addToSet: { members: request.user._id } }
+        );
 
-        res.json({ message: 'Request accepted' });
+        res.json({ message: 'Request accepted successfully' });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: err.message }); 
     }
 });
 
 // POST /api/v1/agency/request/reject - Reject join request
-router.post('/agency/request/reject', async (req, res) => {
+router.post('/request/reject', async (req, res) => {
     try {
         const { requestId } = req.body;
         const request = await AgencyRequest.findById(requestId);
+
         if (!request || request.status !== 'pending') {
-            return res.status(404).json({ message: 'Request not found or already processed' });
+            return res.status(404).json({ message: 'Invalid request' });
         }
+
         request.status = 'rejected';
         await request.save();
-        await Agency.findByIdAndUpdate(request.agency, { $pull: { joinUsers: request.user._id } });
-        res.json({ message: 'Request rejected' });
+
+        res.json({ message: 'Request rejected successfully' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
