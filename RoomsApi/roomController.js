@@ -227,7 +227,12 @@ exports.getMessages = async (req, res) => {
 exports.getAllRooms = async (req, res) => {
   try {
     const rooms = await Room.find();
-    res.status(200).json(rooms);
+    // show total members in each room
+    const roomsWithMemberCount = rooms.map(room => ({
+      ...room.toObject(),
+      memberCount: room.members.length
+    }));
+    res.status(200).json(rooms, roomsWithMemberCount);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

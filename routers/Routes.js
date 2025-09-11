@@ -228,9 +228,9 @@ router.post("/member/kickoff", roomController.kickOffMember);
 router.put("/admin/room-chat-toggle/:roomId", roomController.adminChatBan);
 
 // auto Expiry of rooms
-setInterval(() => {
-  autoRoomExpiry();
-}, 60 * 60 * 1000); // runs every 1 hour (3600000 ms)
+// setInterval(() => {
+//   autoRoomExpiry();
+// }, 60 * 60 * 1000); // runs every 1 hour (3600000 ms)
 
 
 // Shops 
