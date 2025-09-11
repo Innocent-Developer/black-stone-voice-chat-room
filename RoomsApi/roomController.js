@@ -140,6 +140,8 @@ exports.joinRoom = async (req, res) => {
         return res.status(401).json({ error: "Invalid or missing room key" });
       }
     }
+    // update total members in room
+    room.totalMembers = room.members.length + 1;
 
     // Add user to room
     room.members.push(ui_id);
@@ -355,7 +357,8 @@ exports.kickOffMember = async (req, res) => {
 
     const isMember = room.members.includes(ui_id);
     if (!isMember) return res.status(404).json({ error: "Member not found in room" });
-
+    // update total members in room
+    room.totalMembers = room.members.length - 1;
     room.members.pull(ui_id);
     await room.save();
 
@@ -426,6 +429,8 @@ exports.laveRoom = async (req, res) => {
         .status(403)
         .json({ error: "You are not a member of this room." });
     }
+    // update total members in room
+    room.totalMembers = room.members.length - 1;
 
     // Remove user from room members
     room.members.pull(ui_id);

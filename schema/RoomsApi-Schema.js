@@ -24,6 +24,7 @@ const roomSchema = new mongoose.Schema({
   roomThemeImage: String,
   createdAt: { type: Date, default: Date.now },
   expiresAt: { type: Date }, // room auto-deletion
+  totalMembers: { type: Number, default: 1 },
   members: [{ type: String }], // use ui_id directly as string
   chat: [chatMessageSchema], // <-- now this works fine
   chatEnabled: {
