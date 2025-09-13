@@ -217,7 +217,7 @@ router.post("/block/room/user", roomController.blockUser);
 router.put("/update/room/:roomId", roomController.updateRoom);
 router.post('/room/:roomId/chat', roomController.sendMessage);
 router.get('/room/:roomId/chat', roomController.getMessages);
-router.post('/room/leave', roomController.laveRoom);
+router.post('/room/leave', roomController.leaveRoom);
 
 // admin room controllers
 router.get("/admin/rooms", roomController.getAllRooms);
