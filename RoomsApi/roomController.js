@@ -416,28 +416,21 @@ exports.leaveRoom = async (req, res) => {
   try {
     const { roomId, ui_id } = req.body;
 
-    const room = await Room.findOne({ roomId });
+    // Always convert roomId to string because schema stores it as string
+    const room = await Room.findOne({ roomId: roomId.toString() });
     const user = await User.findOne({ ui_id });
-
-    console.log("Request body:", req.body);
-    console.log("Room found:", room);
-    console.log("User found:", user);
 
     if (!room || !user) {
       return res.status(404).json({ error: "Room or User not found" });
     }
 
-    console.log("Room members before:", room.members);
-
-    // Make sure members is always an array
+    // Ensure members exists
     if (!Array.isArray(room.members)) {
-      console.log("⚠️ room.members was not an array, initializing empty array");
       room.members = [];
     }
 
+    // Check membership
     const isMember = room.members.includes(ui_id.toString());
-    console.log("Is Member:", isMember);
-
     if (!isMember) {
       return res
         .status(403)
@@ -445,11 +438,18 @@ exports.leaveRoom = async (req, res) => {
     }
 
     // Remove user
-    room.members = room.members.filter(id => id !== ui_id.toString());
+    room.members = room.members.filter((id) => id !== ui_id.toString());
+
+    // Update totalMembers
     room.totalMembers = room.members.length;
 
-    console.log("Room members after:", room.members);
-    console.log("Total members:", room.totalMembers);
+    // Optional: auto delete if no members left
+    if (room.totalMembers === 0) {
+      await Room.deleteOne({ _id: room._id });
+      return res.status(200).json({
+        message: "User left the room. Room deleted because no members remain.",
+      });
+    }
 
     await room.save();
 
@@ -459,6 +459,7 @@ exports.leaveRoom = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 
 
