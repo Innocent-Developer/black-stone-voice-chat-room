@@ -5,12 +5,13 @@ const User = require("../schema/account-create");
 const generateRoomId = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
+
 // Create Room
 exports.createRoom = async (req, res) => {
   try {
     let roomId;
     let existingRoom;
-     const { ui_id } = req.body;
+    const { ui_id } = req.body;
 
     // Ensure roomId is unique
     do {
@@ -30,11 +31,12 @@ exports.createRoom = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 // Delete Room
 exports.deleteRoom = async (req, res) => {
   try {
     await Room.findOneAndDelete({ roomId: req.params.roomId });
-    
+
     res.status(200).json({ message: "Room deleted" });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -155,6 +157,28 @@ exports.joinRoom = async (req, res) => {
   }
 };
 
+// 🚀 Leave Room
+exports.leaveRoom = async (req, res) => {
+  try {
+    const { roomId, ui_id } = req.body;
+
+    const room = await Room.findOne({ roomId });
+    if (!room) return res.status(404).json({ error: "Room not found" });
+
+    const isMember = room.members.includes(ui_id);
+    if (!isMember) return res.status(400).json({ error: "User is not in this room" });
+
+    // Remove user from room
+    room.members = room.members.filter((m) => m !== ui_id);
+    room.totalMembers = room.members.length;
+
+    await room.save();
+
+    res.status(200).json({ message: "User left the room successfully", room });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
 
 // chat in room
 // POST /room/:roomId/chat
@@ -225,14 +249,15 @@ exports.getMessages = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 // Get All Rooms
 exports.getAllRooms = async (req, res) => {
   try {
     const rooms = await Room.find();
     // show total members in each room
-    const totalUser = rooms.map(room => ({
+    const totalUser = rooms.map((room) => ({
       ...room.toObject(),
-      memberCount: room.members.length
+      memberCount: room.members.length,
     }));
     res.status(200).json(rooms, totalUser);
   } catch (err) {
@@ -249,7 +274,7 @@ exports.getRoomById = async (req, res) => {
     const totalUser = room.members.length;
     console.log(totalUser);
     if (!room) return res.status(404).json({ error: "Room not found" });
-    res.status(200).json(room,totalUser);
+    res.status(200).json(room, totalUser);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -313,6 +338,7 @@ exports.banRoom = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 // POST /admin/unban-room
 exports.unbanRoom = async (req, res) => {
   try {
@@ -330,8 +356,6 @@ exports.unbanRoom = async (req, res) => {
   }
 };
 
-
-
 exports.usergetAllroomsdRooms = async (req, res) => {
   try {
     const { ui_id } = req.body;
@@ -345,8 +369,7 @@ exports.usergetAllroomsdRooms = async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
-}
-
+};
 
 exports.kickOffMember = async (req, res) => {
   try {
@@ -356,7 +379,8 @@ exports.kickOffMember = async (req, res) => {
     if (!room) return res.status(404).json({ error: "Room not found" });
 
     const isMember = room.members.includes(ui_id);
-    if (!isMember) return res.status(404).json({ error: "Member not found in room" });
+    if (!isMember)
+      return res.status(404).json({ error: "Member not found in room" });
     // update total members in room
     room.totalMembers = room.members.length - 1;
     room.members.pull(ui_id);
@@ -368,7 +392,7 @@ exports.kickOffMember = async (req, res) => {
   }
 };
 
-//create a new api that are use to seen all gift send form users in this room 
+//create a new api that are use to seen all gift send form users in this room
 exports.getRoomGifts = async (req, res) => {
   try {
     const { roomId } = req.params;
@@ -387,11 +411,11 @@ exports.sendGift = async (req, res) => {
   try {
     const { roomId, ui_id, giftType, giftValue } = req.body;
 
-    const room = await Room.find({roomId });
-    const user = await User.find({ui_id});
-    
+    const room = await Room.find({ roomId });
+    const user = await User.find({ ui_id });
+
     if (!room || !user)
-      return res.status(404).json({ error: "Room or User not found" }); 
+      return res.status(404).json({ error: "Room or User not found" });
     // Check if user is a room member
     const isMember = room.members.includes(ui_id);
     if (!isMember) {
@@ -408,58 +432,4 @@ exports.sendGift = async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
-};  
-
-// leave user room 
-
-exports.leaveRoom = async (req, res) => {
-  try {
-    const { roomId, ui_id } = req.body;
-
-    // Always convert roomId to string because schema stores it as string
-    const room = await Room.findOne({ roomId: roomId.toString() });
-
-    if (!room) {
-      return res.status(404).json({ error: "Room or User not found" });
-    }
-
-    // Ensure members exists
-    if (!Array.isArray(room.members)) {
-      room.members = [];
-    }
-
-    // Check membership
-    const isMember = room.members.includes(ui_id.toString());
-    if (!isMember) {
-      return res
-        .status(403)
-        .json({ error: "You are not a member of this room." });
-    }
-
-    // Remove user
-    room.members = room.members.filter((id) => id !== ui_id.toString());
-
-    // Update totalMembers
-    room.totalMembers = room.members.length;
-
-    // Optional: auto delete if no members left
-    if (room.totalMembers === 0) {
-      await Room.deleteOne({ _id: room._id });
-      return res.status(200).json({
-        message: "User left the room. Room deleted because no members remain.",
-      });
-    }
-
-    await room.save();
-
-    res.status(200).json({ message: "User left the room successfully" });
-  } catch (err) {
-    console.error("LeaveRoom Error:", err);
-    res.status(400).json({ error: err.message });
-  }
 };
-
-
-
-
-// RoomsApi/roomController.js ends here
