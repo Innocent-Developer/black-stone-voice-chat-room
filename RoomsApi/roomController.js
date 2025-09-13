@@ -418,9 +418,8 @@ exports.leaveRoom = async (req, res) => {
 
     // Always convert roomId to string because schema stores it as string
     const room = await Room.findOne({ roomId: roomId.toString() });
-    const user = await User.findOne({ ui_id });
 
-    if (!room || !user) {
+    if (!room) {
       return res.status(404).json({ error: "Room or User not found" });
     }
 
