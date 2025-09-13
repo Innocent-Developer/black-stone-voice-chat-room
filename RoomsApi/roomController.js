@@ -419,31 +419,47 @@ exports.leaveRoom = async (req, res) => {
     const room = await Room.findOne({ roomId });
     const user = await User.findOne({ ui_id });
 
+    console.log("Request body:", req.body);
+    console.log("Room found:", room);
+    console.log("User found:", user);
+
     if (!room || !user) {
       return res.status(404).json({ error: "Room or User not found" });
     }
 
-    // Check if user is a room member
+    console.log("Room members before:", room.members);
+
+    // Make sure members is always an array
+    if (!Array.isArray(room.members)) {
+      console.log("⚠️ room.members was not an array, initializing empty array");
+      room.members = [];
+    }
+
     const isMember = room.members.includes(ui_id.toString());
+    console.log("Is Member:", isMember);
+
     if (!isMember) {
       return res
         .status(403)
         .json({ error: "You are not a member of this room." });
     }
 
-    // Remove user from room members
-    room.members.pull(ui_id.toString());
-
-    // Update total members
+    // Remove user
+    room.members = room.members.filter(id => id !== ui_id.toString());
     room.totalMembers = room.members.length;
+
+    console.log("Room members after:", room.members);
+    console.log("Total members:", room.totalMembers);
 
     await room.save();
 
     res.status(200).json({ message: "User left the room successfully" });
   } catch (err) {
+    console.error("LeaveRoom Error:", err);
     res.status(400).json({ error: err.message });
   }
 };
+
 
 
 // RoomsApi/roomController.js ends here
