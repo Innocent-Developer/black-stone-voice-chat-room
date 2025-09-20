@@ -108,7 +108,7 @@ router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
 router.post("/merchant/approve/sell/coin/a/live", approveCoinsell);
 router.get("/get/all/a/vvpi/merchants", getAllMerchants);
 router.get("/get/merchant/user/o/bsvcr/user/find/:ui_id", getMerchantById);
-router.delete("/admin/delete/merchant", require("../Merchant/deleteMerchant"));
+router.post("/admin/delete/merchant", require("../Merchant/deleteMerchant"));
 
 // admin coin add merchants 
 router.post("/admin/merchant/coin/add/fast", merchantCoinAdd);
