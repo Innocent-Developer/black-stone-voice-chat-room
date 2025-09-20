@@ -17,6 +17,15 @@ const updateAgency = async (req, res) => {
     if (name) agency.name = name;
     if (agencyName) agency.agencyName = agencyName;
     if (agencyLogo) agency.agencyLogo = agencyLogo;
+    // update or change agency id
+    if (req.body.newAgencyId) {
+      const existingAgency = await Agency.findOne({ agencyId: Number(req.body.newAgencyId) });
+      if (existingAgency) {
+        return res.status(400).json({ message: "New Agency ID already exists." });
+      }
+      agency.agencyId = Number(req.body.newAgencyId);
+    }
+    
 
     await agency.save();
 
