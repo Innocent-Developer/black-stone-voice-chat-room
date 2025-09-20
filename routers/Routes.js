@@ -250,7 +250,7 @@ router.get("/api/v1/get/all/agency", getAllAgency)
 router.post("/api/v1/agency/create", CreateAgency);
 router.post("/api/v1/join/agency", joinAgency);
 router.post("/api/v1/agency/update", updateAgency);
-router.delete("/api/v1/agency/delete", require("../Agency-System/Deleteagncy"));
+router.post("/api/v1/agency/delete", require("../Agency-System/Deleteagncy"));
 router.post("/api/v1/agency/record", getAgencyRecord);
 
 

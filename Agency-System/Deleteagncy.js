@@ -3,39 +3,12 @@ const AccountCreate = require("../schema/account-create.js");
 
 const DeleteAgency = async (req, res) => {
   try {
-    const { agencyId, ui_id } = req.body;
-
-    if (!agencyId || !ui_id) {
-      return res
-        .status(400)
-        .json({ message: "Agency ID and UI ID are required." });
-    }
-
-    const existingUser = await AccountCreate.findOne({ ui_id });
-
-    if (!existingUser) {
-      return res
-        .status(404)
-        .json({ message: "Only registered users can delete an agency." });
-    }
-    // If user is not an agency creator, they cannot delete an agency
-    // if (existingUser.agencyCreaterType !== "Host") {
-    //   return res
-    //     .status(403)
-    //     .json({ message: "Only agency creators can delete an agency." });
-    // }
-
+    const { agencyId } = req.body;
     const agency = await Agency.findOne({ agencyId: Number(agencyId) });
+
     if (!agency) {
       return res.status(404).json({ message: "Agency not found." });
     }
-
-    // Check if the user is the creator of the agency
-    // if (agency.createrId !== ui_id) {
-    //   return res
-    //     .status(403)
-    //     .json({ message: "You are not authorized to delete this agency." });
-    // }
 
     // Remove all members from the agency
     for (const member of agency.joinUsers) {
@@ -47,8 +20,13 @@ const DeleteAgency = async (req, res) => {
     }
 
     // Reset the creator's agencyCreaterType
-    existingUser.agencyCreaterType = "";
-    await existingUser.save();
+    if (agency.createrId) {
+      const creatorUser = await AccountCreate.findOne({ ui_id: agency.createrId });
+      if (creatorUser) {
+        creatorUser.agencyCreaterType = "no";
+        await creatorUser.save();
+      }
+    }
 
     // Delete the agency
     await Agency.deleteOne({ agencyId: Number(agencyId) });
