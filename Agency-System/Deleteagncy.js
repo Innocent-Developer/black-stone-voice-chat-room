@@ -31,11 +31,11 @@ const DeleteAgency = async (req, res) => {
     }
 
     // Check if the user is the creator of the agency
-    if (agency.createrId !== ui_id) {
-      return res
-        .status(403)
-        .json({ message: "You are not authorized to delete this agency." });
-    }
+    // if (agency.createrId !== ui_id) {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "You are not authorized to delete this agency." });
+    // }
 
     // Remove all members from the agency
     for (const member of agency.joinUsers) {
