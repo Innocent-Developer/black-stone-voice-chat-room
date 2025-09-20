@@ -66,6 +66,7 @@ const BuyVVIPS = require("../VVpis/BuyVVIPS");
 const getHistory = require("../VVpis/GetHistory");
 const { uploadFileR2, deleteFileR2, uploadMiddleware } = require("../uploadR2/uploadFileR2");
 const autoExpireBanners = require("../Banner/autoExpireBanners");
+const getAgencyRecord = require("../Agency-System/getAgencyRecord");
 // account routes
 router.post("/account/create/new", signup)
 router.post("/verify-otp", require("../account/verifyotp"));
@@ -107,6 +108,7 @@ router.post("/admin/approve/coin", require("../Merchant/adminapprove-coin"));
 router.post("/merchant/approve/sell/coin/a/live", approveCoinsell);
 router.get("/get/all/a/vvpi/merchants", getAllMerchants);
 router.get("/get/merchant/user/o/bsvcr/user/find/:ui_id", getMerchantById);
+router.delete("/admin/delete/merchant", require("../Merchant/deleteMerchant"));
 
 // admin coin add merchants 
 router.post("/admin/merchant/coin/add/fast", merchantCoinAdd);
@@ -248,6 +250,9 @@ router.get("/api/v1/get/all/agency", getAllAgency)
 router.post("/api/v1/agency/create", CreateAgency);
 router.post("/api/v1/join/agency", joinAgency);
 router.post("/api/v1/agency/update", updateAgency);
+router.delete("/api/v1/agency/delete", require("../Agency-System/Deleteagncy"));
+router.post("/api/v1/agency/records", getAgencyRecord);
+
 
 
 
