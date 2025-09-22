@@ -18,13 +18,13 @@ const sendOtpEmail = async (email, otp) => {
 
 
   const mailOptions = {
-  from: '"Fun Chat Party" <otp@funchatparty.online>',
-  replyTo: 'otp@funchatparty.online',
+  from: '"chu chu Party" <otp@chuchuparty.online>',
+  replyTo: 'otp@chuchuparty.online',
   to: email,
-  subject: "🔐 Your Fun Chat Party OTP Code – Let’s Get the Fun Started!",
+  subject: "🔐 Your chuchuparty Party OTP Code – Let’s Get the Fun Started!",
   text: `Hey there! 🎉
 
-Welcome to Fun Chat Party – where conversations meet excitement!
+Welcome to  chu chu Party – where conversations meet excitement!
 
 Your One-Time Password (OTP) is:
 
@@ -47,7 +47,7 @@ Team Fun Chat Party
         <h2 style="text-align: center; color: #333;">🔐 Your One-Time Password</h2>
         <p style="text-align: center; color: #555; font-size: 16px;">
           Hey there! 🎉<br/>
-          Welcome to <strong>Fun Chat Party</strong> – where conversations meet excitement!
+          Welcome to <strong>chu chu party</strong> – where conversations meet excitement!
         </p>
         <div style="text-align: center; margin: 30px 0;">
           <span style="font-size: 28px; font-weight: bold; background: #ff4081; color: white; padding: 12px 24px; border-radius: 10px;">
