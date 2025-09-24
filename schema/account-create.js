@@ -25,6 +25,10 @@ const accountCreateSchema = new Schema(
       type: String, 
       default: "no",
     },
+    role:{
+      type: String, 
+      default: "user",
+    },
 
     // ✅ If you want phone / number uniqueness only when present
     number: {
