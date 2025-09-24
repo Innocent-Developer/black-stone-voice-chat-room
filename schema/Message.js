@@ -15,6 +15,10 @@ const messageSchema = new mongoose.Schema({
     required: true
   },
   title: String,
+  image:{
+    type: String,
+    default: ''
+  },
   isAdminBroadcast: {
     type: Boolean,
     default: false

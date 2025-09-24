@@ -293,13 +293,18 @@ router.get("/admin/messages", auth, async (req, res) => {
 // Send broadcast message from admin to all users
 router.post("/admin/broadcast", auth, async (req, res) => {
   try {
-   
+    // Get user from auth middleware
     const user = await User.findById(req.user.id);
+    
+    // Check both user existence and admin role
     if (!user || user.role !== "admin") {
-      return res.status(403).json({ message: "Unauthorized" });
+      return res.status(403).json({ 
+        message: "Unauthorized. Admin privileges required.",
+        error: "Not an admin user"
+      });
     }
     
-    const { title, content } = req.body;
+    const { title, content, image } = req.body;
 
     if (!content) {
       return res.status(400).json({ message: "Content is required" });
@@ -318,6 +323,7 @@ router.post("/admin/broadcast", auth, async (req, res) => {
         receiverId: user._id,
         title,
         content,
+        image, // Add image support
         isAdminBroadcast: true
       });
       return await message.save();
@@ -329,6 +335,7 @@ router.post("/admin/broadcast", auth, async (req, res) => {
     });
 
   } catch (err) {
+    console.error("Broadcast error:", err);
     handleError(res, err, "Failed to send broadcast message");
   }
 });
