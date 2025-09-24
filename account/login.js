@@ -39,7 +39,7 @@ const login = async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { id: user._id,userData},
+      { id: user._id,username: user.username, email: user.email , role: user.role},
       process.env.JWT_SECRET || "default_jwt_secret",
       { expiresIn: "1h" }
     );
