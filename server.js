@@ -84,7 +84,7 @@ const dbconnect = require("./db connect/dbconnect");
 dbconnect();
 
 // ✅ Your main routes
-app.use("/", require("./routers/Routes.js"));
+//app.use("/", require("./routers/Routes.js"));
 app.use("/auth", require("./auths/auth.js"));
 
 // ✅ Example: Cached Endpoint (test route)
