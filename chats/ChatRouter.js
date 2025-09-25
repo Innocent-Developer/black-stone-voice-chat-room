@@ -291,20 +291,11 @@ router.get("/admin/messages", auth, async (req, res) => {
 })
 
 // Send broadcast message from admin to all users
-router.post("/admin/broadcast", auth, async (req, res) => {
+router.post("/admin/broadcast", async (req, res) => {
   try {
-    // Get user from auth middleware
-    const user = await User.findById(req.user.id);
-    
-    // Check both user existence and admin role
-    // if (!user || user.role !== "admin") {
-    //   return res.status(403).json({ 
-    //     message: "Unauthorized. Admin privileges required.",
-    //     error: "Not an admin user"
-    //   });
-    // }
-    
-    const { title, content, image } = req.body;
+ 
+    const { title, content, image,id } = req.body;
+      const user = await User.findById(id);
 
     if (!content) {
       return res.status(400).json({ message: "Content is required" });
@@ -312,14 +303,14 @@ router.post("/admin/broadcast", auth, async (req, res) => {
 
     // Get all users except admin
     const users = await User.find({ 
-      _id: { $ne: req.user.id },
+      _id: { $ne:id },
       role: { $ne: 'admin' }
     });
 
     // Create broadcast messages for all users
     const messages = await Promise.all(users.map(async (user) => {
       const message = new Message({
-        senderId: req.user.id,
+        senderId: id,
         receiverId: user._id,
         title,
         content,
