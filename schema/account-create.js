@@ -62,6 +62,10 @@ const accountCreateSchema = new Schema(
 
     followers: [{ type: Number }],
     following: [{ type: Number }],
+    isBlocked:{
+      type: Boolean,
+       default: false
+    },
 
     resetPasswordOtp: String,
     otpExpiration: Number,
