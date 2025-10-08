@@ -161,24 +161,25 @@ exports.joinRoom = async (req, res) => {
 exports.leaveRoom = async (req, res) => {
   try {
     const { roomId, ui_id } = req.body;
+    console.log("leaveRoom payload:", req.body);
 
-    const room = await Room.findOne({ roomId });
+    let room = await Room.findOne({ roomId: roomId }) || await Room.findById(roomId);
     if (!room) return res.status(404).json({ error: "Room not found" });
 
-    const isMember = room.members.includes(ui_id);
-    if (!isMember) return res.status(400).json({ error: "User is not in this room" });
+    if (!room.members.includes(ui_id))
+      return res.status(400).json({ error: "User is not in this room" });
 
-    // Remove user from room
-    room.members = room.members.filter((m) => m !== ui_id);
+    room.members = room.members.filter(m => m !== ui_id);
     room.totalMembers = room.members.length;
 
     await room.save();
-
     res.status(200).json({ message: "User left the room successfully", room });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("leaveRoom error:", err);
+    res.status(500).json({ error: err.message });
   }
 };
+
 
 // chat in room
 // POST /room/:roomId/chat
